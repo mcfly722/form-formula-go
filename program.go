@@ -158,18 +158,26 @@ func (program *Program) Execute() float64 {
 }
 
 func (program *Program) ExecuteWithIterations(n int, x float64) float64 {
+
 	program.memory[PV0] = 0
 	program.memory[PV1] = 1
 	program.memory[PVX] = x
 	program.memory[X] = x
 
+	resultAddr := len(program.memory) - 1
+
 	for i := 1; i <= n; i++ {
 		program.memory[I] = float64(i)
 		result := program.Execute()
+
+		if math.IsNaN(result) || math.IsInf(result, 1) || math.IsInf(result, -1) {
+			break
+		}
+
 		program.memory[PV0] = result
 		program.memory[PV1] = result
 		program.memory[PVX] = result
 	}
 
-	return program.memory[len(program.memory)-1]
+	return program.memory[resultAddr]
 }
