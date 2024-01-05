@@ -55,3 +55,8 @@ func Test_Execute(t *testing.T) {
 		t.Fatalf("expected=%v result=%v", result, expected)
 	}
 }
+
+func Test_Execute_Empty(t *testing.T) {
+	p := formFormula.NewProgram()
+	p.Execute()
+}
