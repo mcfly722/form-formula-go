@@ -5,15 +5,17 @@ import "fmt"
 type OffsetMEM int
 
 const (
-	I   OffsetMEM = 0
-	PVO OffsetMEM = 1
-	PV1 OffsetMEM = 2
-	PVX OffsetMEM = 3
-	PI  OffsetMEM = 4
-	E   OffsetMEM = 5
+	X   OffsetMEM = 0
+	I   OffsetMEM = 1
+	PVO OffsetMEM = 2
+	PV1 OffsetMEM = 3
+	PVX OffsetMEM = 4
+	PI  OffsetMEM = 5
+	E   OffsetMEM = 6
 )
 
 var Constants = map[OffsetMEM]string{
+	X:   "x",
 	I:   "i",
 	PVO: "Pv0",
 	PV1: "Pv1",
@@ -56,7 +58,7 @@ func NewProgram() *Program {
 	}
 }
 
-func (program *Program) NewFunc(operand1Offset int, operationType OperationType) int {
+func (program *Program) NewFunc(operationType OperationType, operand1Offset int) int {
 
 	program.memory = append(program.memory, 666)
 	resultAddr := len(program.memory) - 1
@@ -71,7 +73,7 @@ func (program *Program) NewFunc(operand1Offset int, operationType OperationType)
 	return resultAddr
 }
 
-func (program *Program) NewOp(operand1Offset int, operand2Offset int, operationType OperationType) int {
+func (program *Program) NewOp(operationType OperationType, operand1Offset int, operand2Offset int) int {
 	program.memory = append(program.memory, 666)
 
 	newOp := Operation{
