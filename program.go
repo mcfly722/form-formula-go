@@ -8,25 +8,27 @@ import (
 type OffsetMEM int
 
 const (
-	X   OffsetMEM = 0
-	I   OffsetMEM = 1
-	PVO OffsetMEM = 2
-	PV1 OffsetMEM = 3
-	PVX OffsetMEM = 4
-	ONE OffsetMEM = 5
-	PI  OffsetMEM = 6
-	E   OffsetMEM = 7
+	X         OffsetMEM = 0
+	I         OffsetMEM = 1
+	PV0       OffsetMEM = 2
+	PV1       OffsetMEM = 3
+	PVX       OffsetMEM = 4
+	ONE       OffsetMEM = 5
+	MINUS_ONE OffsetMEM = 6
+	PI        OffsetMEM = 7
+	E         OffsetMEM = 8
 )
 
 var Constants = map[OffsetMEM]string{
-	X:   "x",
-	I:   "i",
-	PVO: "Pv0",
-	PV1: "Pv1",
-	PVX: "PvX",
-	ONE: "1",
-	PI:  "Pi",
-	E:   "e",
+	X:         "x",
+	I:         "i",
+	PV0:       "Pv0",
+	PV1:       "Pv1",
+	PVX:       "PvX",
+	ONE:       "1",
+	MINUS_ONE: "-1",
+	PI:        "Pi",
+	E:         "e",
 }
 
 type OperationType int
@@ -60,6 +62,7 @@ func NewProgram() *Program {
 	memory := make([]float64, len(Constants))
 
 	memory[ONE] = 1
+	memory[MINUS_ONE] = -1
 	memory[PI] = math.Pi
 	memory[E] = math.E
 
@@ -149,6 +152,23 @@ func (program *Program) Execute() float64 {
 		default:
 			panic(fmt.Sprintf("unknown operationType=%v", operation.OperationType))
 		}
+	}
+
+	return program.memory[len(program.memory)-1]
+}
+
+func (program *Program) ExecuteWithIterations(n int, x float64) float64 {
+	program.memory[PV0] = 0
+	program.memory[PV1] = 1
+	program.memory[PVX] = x
+	program.memory[X] = x
+
+	for i := 1; i <= n; i++ {
+		program.memory[I] = float64(i)
+		result := program.Execute()
+		program.memory[PV0] = result
+		program.memory[PV1] = result
+		program.memory[PVX] = result
 	}
 
 	return program.memory[len(program.memory)-1]
