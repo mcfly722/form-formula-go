@@ -1,6 +1,9 @@
 package formFormula
 
-import "fmt"
+import (
+	"fmt"
+	"math"
+)
 
 type OffsetMEM int
 
@@ -10,8 +13,9 @@ const (
 	PVO OffsetMEM = 2
 	PV1 OffsetMEM = 3
 	PVX OffsetMEM = 4
-	PI  OffsetMEM = 5
-	E   OffsetMEM = 6
+	ONE OffsetMEM = 5
+	PI  OffsetMEM = 6
+	E   OffsetMEM = 7
 )
 
 var Constants = map[OffsetMEM]string{
@@ -20,6 +24,7 @@ var Constants = map[OffsetMEM]string{
 	PVO: "Pv0",
 	PV1: "Pv1",
 	PVX: "PvX",
+	ONE: "1",
 	PI:  "Pi",
 	E:   "e",
 }
@@ -52,10 +57,20 @@ type Program struct {
 }
 
 func NewProgram() *Program {
+	memory := make([]float64, len(Constants))
+
+	memory[ONE] = 1
+	memory[PI] = math.Pi
+	memory[E] = math.E
+
 	return &Program{
-		memory:     make([]float64, len(Constants)),
+		memory:     memory,
 		operations: []Operation{},
 	}
+}
+
+func (program *Program) SetX(x float64) {
+	program.memory[X] = x
 }
 
 func (program *Program) NewFunc(operationType OperationType, operand1Offset int) int {
@@ -112,4 +127,29 @@ func (program *Program) ToString(operation *Operation) string {
 func (program *Program) Disassemble() string {
 	operation := program.operations[len(program.operations)-1]
 	return program.ToString(&operation)
+}
+
+func (program *Program) Dump() string {
+	return fmt.Sprintf("memory:%v\nprogram:%v", program.memory, program.operations)
+}
+
+func (program *Program) Execute() float64 {
+
+	memory := program.memory
+	resultsOffset := len(Constants)
+
+	for operationNumber, operation := range program.operations {
+		memoryResultOffset := operationNumber + resultsOffset
+
+		switch operation.OperationType {
+		case SUM:
+			memory[memoryResultOffset] = memory[operation.Operand1Offset] + memory[operation.Operand2Offset]
+		case MUL:
+			memory[memoryResultOffset] = memory[operation.Operand1Offset] * memory[operation.Operand2Offset]
+		default:
+			panic(fmt.Sprintf("unknown operationType=%v", operation.OperationType))
+		}
+	}
+
+	return program.memory[len(program.memory)-1]
 }
