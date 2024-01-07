@@ -5,60 +5,23 @@ import (
 	"math"
 )
 
-type OffsetMEM int
-
-const (
-	X         OffsetMEM = 0
-	I         OffsetMEM = 1
-	PV0       OffsetMEM = 2
-	PV1       OffsetMEM = 3
-	PVX       OffsetMEM = 4
-	ONE       OffsetMEM = 5
-	MINUS_ONE OffsetMEM = 6
-	PI        OffsetMEM = 7
-	E         OffsetMEM = 8
-)
-
-var Constants = map[OffsetMEM]string{
-	X:         "x",
-	I:         "i",
-	PV0:       "Pv0",
-	PV1:       "Pv1",
-	PVX:       "PvX",
-	ONE:       "1",
-	MINUS_ONE: "-1",
-	PI:        "Pi",
-	E:         "e",
+type ProgramIterational interface {
+	SetX(x float64)
+	NewFunc(operationType OperationType, operand1Offset int) int
+	NewOp(operationType OperationType, operand1Offset int, operand2Offset int) int
+	ToString(operation *Operation) string
+	Disassemble() string
+	Dump() string
+	Execute() float64
+	ExecuteWithIterations(n int, x float64) float64
 }
 
-type OperationType int
-
-const (
-	SUM OperationType = 0
-	MUL OperationType = 1
-	DIV OperationType = 2
-	FCT OperationType = 3
-)
-
-var operations = map[OperationType]string{
-	SUM: "+",
-	MUL: "*",
-	DIV: "/",
-	FCT: "!",
-}
-
-type Operation struct {
-	Operand1Offset int
-	Operand2Offset int
-	OperationType  OperationType
-}
-
-type Program struct {
+type programIterational struct {
 	memory     []float64
 	operations []Operation
 }
 
-func NewProgram() *Program {
+func NewIterationalProgram() ProgramIterational {
 	memory := make([]float64, len(Constants))
 
 	memory[ONE] = 1
@@ -66,17 +29,17 @@ func NewProgram() *Program {
 	memory[PI] = math.Pi
 	memory[E] = math.E
 
-	return &Program{
+	return &programIterational{
 		memory:     memory,
 		operations: []Operation{},
 	}
 }
 
-func (program *Program) SetX(x float64) {
+func (program *programIterational) SetX(x float64) {
 	program.memory[X] = x
 }
 
-func (program *Program) NewFunc(operationType OperationType, operand1Offset int) int {
+func (program *programIterational) NewFunc(operationType OperationType, operand1Offset int) int {
 
 	program.memory = append(program.memory, 666)
 	resultAddr := len(program.memory) - 1
@@ -91,7 +54,7 @@ func (program *Program) NewFunc(operationType OperationType, operand1Offset int)
 	return resultAddr
 }
 
-func (program *Program) NewOp(operationType OperationType, operand1Offset int, operand2Offset int) int {
+func (program *programIterational) NewOp(operationType OperationType, operand1Offset int, operand2Offset int) int {
 	program.memory = append(program.memory, 666)
 
 	newOp := Operation{
@@ -103,7 +66,7 @@ func (program *Program) NewOp(operationType OperationType, operand1Offset int, o
 	return len(program.memory) - 1
 }
 
-func (program *Program) ToString(operation *Operation) string {
+func (program *programIterational) ToString(operation *Operation) string {
 	result := ""
 
 	if operation.Operand1Offset < len(Constants) {
@@ -127,16 +90,16 @@ func (program *Program) ToString(operation *Operation) string {
 	return result
 }
 
-func (program *Program) Disassemble() string {
+func (program *programIterational) Disassemble() string {
 	operation := program.operations[len(program.operations)-1]
 	return program.ToString(&operation)
 }
 
-func (program *Program) Dump() string {
+func (program *programIterational) Dump() string {
 	return fmt.Sprintf("memory:%v\nprogram:%v", program.memory, program.operations)
 }
 
-func (program *Program) Execute() float64 {
+func (program *programIterational) Execute() float64 {
 
 	memory := program.memory
 	resultsOffset := len(Constants)
@@ -157,7 +120,7 @@ func (program *Program) Execute() float64 {
 	return program.memory[len(program.memory)-1]
 }
 
-func (program *Program) ExecuteWithIterations(n int, x float64) float64 {
+func (program *programIterational) ExecuteWithIterations(n int, x float64) float64 {
 
 	program.memory[PV0] = 0
 	program.memory[PV1] = 1
