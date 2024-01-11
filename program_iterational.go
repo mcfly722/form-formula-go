@@ -9,7 +9,6 @@ type ProgramIterational interface {
 	SetX(x float64)
 	NewFunc(operationType OperationType, operand1Offset int) int
 	NewOp(operationType OperationType, operand1Offset int, operand2Offset int) int
-	ToString(operation *Operation) string
 	Disassemble() string
 	Dump() string
 	Execute() float64
@@ -66,33 +65,32 @@ func (program *programIterational) NewOp(operationType OperationType, operand1Of
 	return len(program.memory) - 1
 }
 
-func (program *programIterational) ToString(operation *Operation) string {
-	result := ""
+func (program *programIterational) toString(operation *Operation) string {
+	val1 := ""
+	val2 := ""
 
 	if operation.Operand1Offset < len(Constants) {
-		result += Constants[(OffsetMEM)(operation.Operand1Offset)]
+		val1 = Constants[(OffsetMEM)(operation.Operand1Offset)]
 	} else {
 		op := program.operations[operation.Operand1Offset-len(Constants)]
-		result += fmt.Sprintf("(%v)", program.ToString(&op))
+		val1 += fmt.Sprintf("(%v)", program.toString(&op))
 	}
-
-	result += operations[operation.OperationType]
 
 	if operation.Operand2Offset != 0 {
 		if operation.Operand2Offset < len(Constants) {
-			result += Constants[(OffsetMEM)(operation.Operand2Offset)]
+			val2 = Constants[(OffsetMEM)(operation.Operand2Offset)]
 		} else {
 			op := program.operations[operation.Operand2Offset-len(Constants)]
-			result += fmt.Sprintf("(%v)", program.ToString(&op))
+			val2 = fmt.Sprintf("(%v)", program.toString(&op))
 		}
 	}
 
-	return result
+	return operations[operation.OperationType](val1, val2)
 }
 
 func (program *programIterational) Disassemble() string {
 	operation := program.operations[len(program.operations)-1]
-	return program.ToString(&operation)
+	return program.toString(&operation)
 }
 
 func (program *programIterational) Dump() string {

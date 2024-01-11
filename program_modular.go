@@ -11,6 +11,9 @@ type ProgramModular interface {
 	Disassemble() string
 	Dump() string
 	Execute() uint64
+	GetPointersToFunctionsTypes() []*int
+	GetPointersToOperatorsTypes() []*int
+	GetPointersToConstantsOffsets() []*int
 }
 
 type programModular struct {
@@ -30,6 +33,48 @@ func NewModularProgram(byModule uint64) ProgramModular {
 		operations: []Operation{},
 		byModule:   byModule,
 	}
+}
+
+func (program *programModular) GetPointersToFunctionsTypes() []*int {
+	result := []*int{}
+	l := len(program.operations)
+	for i := 0; i < l; i++ {
+		if program.operations[i].Operand2Offset == 0 {
+			result = append(result, (*int)(&program.operations[i].OperationType))
+		}
+	}
+	return result
+}
+
+func (program *programModular) GetPointersToOperatorsTypes() []*int {
+	result := []*int{}
+	l := len(program.operations)
+	for i := 0; i < l; i++ {
+		if program.operations[i].Operand2Offset != 0 {
+			result = append(result, (*int)(&program.operations[i].OperationType))
+		}
+	}
+	return result
+}
+
+func (program *programModular) GetPointersToConstantsOffsets() []*int {
+	constantsRange := len(Constants)
+	result := []*int{}
+
+	l := len(program.operations)
+
+	for i := 0; i < l; i++ {
+		if program.operations[i].Operand1Offset < constantsRange {
+			//fmt.Printf("OP1:%v [%v]\n", Constants[(OffsetMEM)(program.operations[i].Operand1Offset)], &(program.operations[i].Operand2Offset))
+			result = append(result, &(program.operations[i].Operand1Offset))
+		}
+
+		if program.operations[i].Operand2Offset != 0 && program.operations[i].Operand2Offset < constantsRange {
+			//fmt.Printf("OP2:%v [%v]\n", Constants[(OffsetMEM)(program.operations[i].Operand2Offset)], &(program.operations[i].Operand2Offset))
+			result = append(result, &(program.operations[i].Operand2Offset))
+		}
+	}
+	return result
 }
 
 func (program *programModular) SetX(x uint64) {
@@ -64,26 +109,26 @@ func (program *programModular) NewOp(operationType OperationType, operand1Offset
 }
 
 func (program *programModular) toString(operation *Operation) string {
-	result := ""
+	val1 := ""
+	val2 := ""
 
 	if operation.Operand1Offset < len(Constants) {
-		result += Constants[(OffsetMEM)(operation.Operand1Offset)]
+		val1 = Constants[(OffsetMEM)(operation.Operand1Offset)]
 	} else {
 		op := program.operations[operation.Operand1Offset-len(Constants)]
-		result += fmt.Sprintf("(%v)", program.toString(&op))
+		val1 += fmt.Sprintf("(%v)", program.toString(&op))
 	}
-
-	result += operations[operation.OperationType]
 
 	if operation.Operand2Offset != 0 {
 		if operation.Operand2Offset < len(Constants) {
-			result += Constants[(OffsetMEM)(operation.Operand2Offset)]
+			val2 = Constants[(OffsetMEM)(operation.Operand2Offset)]
 		} else {
 			op := program.operations[operation.Operand2Offset-len(Constants)]
-			result += fmt.Sprintf("(%v)", program.toString(&op))
+			val2 = fmt.Sprintf("(%v)", program.toString(&op))
 		}
 	}
-	return result
+
+	return operations[operation.OperationType](val1, val2)
 }
 
 func (program *programModular) Disassemble() string {

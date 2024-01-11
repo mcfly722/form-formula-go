@@ -7,6 +7,24 @@ import (
 	formFormula "github.com/form-formula-go"
 )
 
+func defaultTestModularProgram() formFormula.ProgramModular {
+
+	p := formFormula.NewModularProgram(29)
+
+	p.NewOp(
+		formFormula.SUM,
+		(int)(formFormula.ONE),
+		p.NewOp(formFormula.MUL,
+			int(formFormula.X),
+			p.NewOp(formFormula.POW,
+				(int)(formFormula.THREE),
+				p.NewFunc(formFormula.FCT, (int)(formFormula.X)),
+			),
+		),
+	)
+	return p
+}
+
 func Test_ProgramModular_Disassemble(t *testing.T) {
 
 	p := formFormula.NewModularProgram(4)
@@ -75,4 +93,34 @@ func Test_Execute(t *testing.T) {
 	fmt.Printf("program:%v\n", p.Disassemble())
 
 	assert_uint64(t, 15310, p.Execute())
+}
+
+func Test_ChangeOperators(t *testing.T) {
+	p := defaultTestModularProgram()
+	fmt.Printf("%v\n", p.Disassemble())
+	operatorsAddresses := p.GetPointersToOperatorsTypes()
+	for _, operator := range operatorsAddresses {
+		*operator = int(formFormula.SUB)
+	}
+	assert_string(t, "(1-(x-(3-(x!)))) mod 29", p.Disassemble())
+}
+
+func Test_ChangeConstants(t *testing.T) {
+	p := defaultTestModularProgram()
+	fmt.Printf("%v\n", p.Disassemble())
+	constantsPointers := p.GetPointersToConstantsOffsets()
+	for _, constantPointer := range constantsPointers {
+		*constantPointer = int(formFormula.X)
+	}
+	assert_string(t, "(x+(x*(x^(x!)))) mod 29", p.Disassemble())
+}
+
+func Test_ChangeFunctions(t *testing.T) {
+	p := defaultTestModularProgram()
+	fmt.Printf("%v\n", p.Disassemble())
+	operatorsAddresses := p.GetPointersToFunctionsTypes()
+	for _, operator := range operatorsAddresses {
+		*operator = int(formFormula.INVERSE)
+	}
+	assert_string(t, "(1+(x*(3^(inverse(x))))) mod 29", p.Disassemble())
 }
