@@ -24,3 +24,10 @@ func assert_uint64(t *testing.T, expected uint64, obtained uint64) {
 	}
 	t.Logf("obtained: %v\n", obtained)
 }
+
+func assert_int(t *testing.T, expected int, obtained int) {
+	if obtained != expected {
+		t.Fatalf("expected %v but obtained %v\n", expected, obtained)
+	}
+	t.Logf("obtained: %v\n", obtained)
+}
