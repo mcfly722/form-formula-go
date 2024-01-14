@@ -39,9 +39,27 @@ func Test_RecombineRequiredX(t *testing.T) {
 	}
 
 	recombiner := formFormula.NewRecombiner()
-	recombiner.RecombineRequiredX(inputRefs, 5, 0, next)
+	recombiner.RecombineRequiredX(&inputRefs, 5, 0, next)
 
 	assert_int(t, 31, counter)
+}
+
+func Test_RecombineRequiredX_EmptyInput(t *testing.T) {
+	input := []int{}
+	inputRefs := []*int{}
+
+	counter := 0
+
+	next := func(remaining *[]*int) {
+		counter++
+		setLadder(remaining)
+		fmt.Printf("%2v %v\n", counter, input)
+	}
+
+	recombiner := formFormula.NewRecombiner()
+	recombiner.RecombineRequiredX(&inputRefs, 5, 0, next)
+
+	assert_int(t, 1, counter)
 }
 
 func Test_Recombine(t *testing.T) {
