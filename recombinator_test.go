@@ -43,3 +43,54 @@ func Test_RecombineRequiredX(t *testing.T) {
 
 	assert_int(t, 31, counter)
 }
+
+func Test_Recombine(t *testing.T) {
+	input := [5]int{}
+	inputRefs := []*int{&input[0], &input[1], &input[2], &input[3], &input[4]}
+
+	counter := 0
+
+	ready := func(remaining *[]*int) {
+		counter++
+		fmt.Printf("%3v %v\n", counter, input)
+	}
+
+	recombiner := formFormula.NewRecombiner()
+	recombiner.Recombine(&inputRefs, []int{0, 1, 2}, ready)
+
+	assert_int(t, 3*3*3*3*3, counter)
+}
+
+func Test_Recombine_EmptyInput(t *testing.T) {
+	input := []int{}
+	inputRefs := []*int{}
+
+	counter := 0
+
+	ready := func(remaining *[]*int) {
+		counter++
+		fmt.Printf("%3v %v\n", counter, input)
+	}
+
+	recombiner := formFormula.NewRecombiner()
+	recombiner.Recombine(&inputRefs, []int{0, 1, 2}, ready)
+
+	assert_int(t, 1, counter)
+}
+
+func Test_Recombine_EmptyValues(t *testing.T) {
+	input := [5]int{}
+	inputRefs := []*int{&input[0], &input[1], &input[2], &input[3], &input[4]}
+
+	counter := 0
+
+	ready := func(remaining *[]*int) {
+		counter++
+		fmt.Printf("%3v %v\n", counter, input)
+	}
+
+	recombiner := formFormula.NewRecombiner()
+	recombiner.Recombine(&inputRefs, []int{}, ready)
+
+	assert_int(t, 1, counter)
+}
