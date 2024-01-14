@@ -124,3 +124,47 @@ func Test_ChangeFunctions(t *testing.T) {
 	}
 	assert_string(t, "(1+(x*(3^(inverse(x))))) mod 29", p.Disassemble())
 }
+
+func Test_NewModularProgramFromBracketsString(t *testing.T) {
+	p, err := formFormula.NewModularProgramFromBracketsString(15, "(()())((()))")
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert_string(t, "((x+x)+((x!)!)) mod 15", p.Disassemble())
+}
+
+func Test_NewModularProgramFromBracketsString_Empty(t *testing.T) {
+	_, err := formFormula.NewModularProgramFromBracketsString(15, "")
+	if err == nil {
+		t.Fatal("error for empty bracket sequence is not catched!")
+	}
+	fmt.Printf("Successfully catched error = %v\n", err)
+}
+
+func Test_NewModularProgramFromBracketsString_TwoBracketsPairs(t *testing.T) {
+	p, err := formFormula.NewModularProgramFromBracketsString(15, "()()")
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert_string(t, "(x+x) mod 15", p.Disassemble())
+}
+
+func Test_NewModularProgramFromBracketsString_OneBracketsPair(t *testing.T) {
+	p, err := formFormula.NewModularProgramFromBracketsString(15, "()")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// () is not an constant, it is operation over constant
+	assert_string(t, "(x!) mod 15", p.Disassemble())
+}
+
+func Test_NewModularProgramFromBracketsString_OneBracketsPair2(t *testing.T) {
+	p, err := formFormula.NewModularProgramFromBracketsString(15, "(())")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// () is not an constant, it is operation over constant
+	assert_string(t, "((x!)!) mod 15", p.Disassemble())
+}

@@ -6,14 +6,14 @@ type OffsetMEM int
 
 const (
 	UNDEFINED OffsetMEM = 0
-	X         OffsetMEM = 1
-	I         OffsetMEM = 2
-	PV0       OffsetMEM = 3
-	PV1       OffsetMEM = 4
-	PVX       OffsetMEM = 5
-	PI        OffsetMEM = 6
-	E         OffsetMEM = 7
-	ONE       OffsetMEM = 8
+	ONE       OffsetMEM = 1
+	X         OffsetMEM = 2
+	I         OffsetMEM = 3
+	PV0       OffsetMEM = 4
+	PV1       OffsetMEM = 5
+	PVX       OffsetMEM = 6
+	PI        OffsetMEM = 7
+	E         OffsetMEM = 8
 	MINUS_ONE OffsetMEM = 9
 	THREE     OffsetMEM = 10
 )
@@ -21,14 +21,15 @@ const (
 type OperationType int
 
 const (
-	SUM     OperationType = 0
-	SUB     OperationType = 1
-	MUL     OperationType = 2
-	DIV     OperationType = 3
-	FCT     OperationType = 4
-	POW     OperationType = 5
-	GCD     OperationType = 6
-	INVERSE OperationType = 7
+	NOTHING OperationType = 0
+	SUM     OperationType = 1
+	SUB     OperationType = 2
+	MUL     OperationType = 3
+	DIV     OperationType = 4
+	FCT     OperationType = 5
+	POW     OperationType = 6
+	GCD     OperationType = 7
+	INVERSE OperationType = 8
 )
 
 type Operation struct {
@@ -52,6 +53,7 @@ var Constants = map[OffsetMEM]string{
 }
 
 var operations = map[OperationType](func(val1 string, val2 string) string){
+	NOTHING: func(val1 string, val2 string) string { return fmt.Sprintf("%v", val1) },
 	SUM:     func(val1 string, val2 string) string { return fmt.Sprintf("%v+%v", val1, val2) },
 	SUB:     func(val1 string, val2 string) string { return fmt.Sprintf("%v-%v", val1, val2) },
 	MUL:     func(val1 string, val2 string) string { return fmt.Sprintf("%v*%v", val1, val2) },

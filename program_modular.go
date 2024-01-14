@@ -1,6 +1,9 @@
 package formFormula
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+)
 
 // Operations: +,-,*,pow
 
@@ -22,16 +25,79 @@ type programModular struct {
 	byModule   uint64
 }
 
-func NewModularProgram(byModule uint64) ProgramModular {
+func initializeMemoryForModularProgram() []uint64 {
 	memory := make([]uint64, len(Constants))
-
 	memory[ONE] = 1
 	memory[THREE] = 3
+	return memory
+}
 
+func NewModularProgram(byModule uint64) ProgramModular {
 	return &programModular{
-		memory:     memory,
+		memory:     initializeMemoryForModularProgram(),
 		operations: []Operation{},
 		byModule:   byModule,
+	}
+}
+
+func NewModularProgramFromBracketsString(byModule uint64, bracketsString string) (ProgramModular, error) {
+	if len(bracketsString) == 0 {
+		return nil, errors.New("brackets sequence is empty")
+	}
+
+	tree, err := BracketsToExpressionTree(bracketsString)
+	if err != nil {
+		return nil, err
+	}
+
+	operations := []Operation{}
+
+	program := &programModular{
+		memory:     initializeMemoryForModularProgram(),
+		operations: operations,
+		byModule:   byModule,
+	}
+
+	program.loadFromExpressionTreeRecursive(tree)
+
+	return program, nil
+}
+
+func (program *programModular) loadFromExpressionTreeRecursive(node *Expression) (int, error) {
+	switch len(node.Arguments) {
+	case 0:
+		return int(X), nil
+	case 1:
+		argumentOffset, err := program.loadFromExpressionTreeRecursive(node.Arguments[0])
+		if err != nil {
+			return -1, err
+		}
+		operation := Operation{
+			Operand1Offset: argumentOffset,
+			OperationType:  FCT,
+		}
+		program.memory = append(program.memory, 0)
+		program.operations = append(program.operations, operation)
+		return len(program.memory) - 1, nil
+	case 2:
+		argumentOffset1, err := program.loadFromExpressionTreeRecursive(node.Arguments[0])
+		if err != nil {
+			return -1, err
+		}
+		argumentOffset2, err := program.loadFromExpressionTreeRecursive(node.Arguments[1])
+		if err != nil {
+			return -1, err
+		}
+		operation := Operation{
+			Operand1Offset: argumentOffset1,
+			Operand2Offset: argumentOffset2,
+			OperationType:  SUM,
+		}
+		program.memory = append(program.memory, 0)
+		program.operations = append(program.operations, operation)
+		return len(program.memory) - 1, nil
+	default:
+		return -1, errors.New("three arguments not supported by modular arithmetic")
 	}
 }
 
