@@ -53,15 +53,15 @@ func Test_Sub_uint64_2(t *testing.T) {
 }
 
 func Test_Pow_uint64_zero(t *testing.T) {
-	assert_uint64(t, 1, formFormula.Pow_uint64(3453453453, 0, 2342341))
+	assert_uint64(t, 1, formFormula.Pow_uint64_mod(3453453453, 0, 2342341))
 }
 
 func Test_Pow_uint64_one(t *testing.T) {
-	assert_uint64(t, 3453453453%2342341, formFormula.Pow_uint64(3453453453, 1, 2342341))
+	assert_uint64(t, 3453453453%2342341, formFormula.Pow_uint64_mod(3453453453, 1, 2342341))
 }
 
 func Test_Pow_uint64_2326182(t *testing.T) {
-	assert_uint64(t, 2326182, formFormula.Pow_uint64(3453453453, 437483784, 2342341))
+	assert_uint64(t, 2326182, formFormula.Pow_uint64_mod(3453453453, 437483784, 2342341))
 }
 
 func Test_GCD_uint64_primes(t *testing.T) {
@@ -136,7 +136,7 @@ func Test_NewModularProgramFromBracketsString(t *testing.T) {
 func Test_NewModularProgramFromBracketsString_Empty(t *testing.T) {
 	_, err := formFormula.NewModularProgramFromBracketsString(15, "")
 	if err == nil {
-		t.Fatal("error for empty bracket sequence is not catched!")
+		t.Fatal("error for empty bracket sequence is not catched")
 	}
 	fmt.Printf("Successfully catched error = %v\n", err)
 }
@@ -167,4 +167,38 @@ func Test_NewModularProgramFromBracketsString_OneBracketsPair2(t *testing.T) {
 
 	// () is not an constant, it is operation over constant
 	assert_string(t, "((x!)!) mod 15", p.Disassemble())
+}
+
+func Test_Pow_uint64(t *testing.T) {
+	assert_uint64(t, 1594323, formFormula.Pow_uint64(3, 13))
+}
+
+func Test_Fact_uint64(t *testing.T) {
+	assert_uint64(t, 1307674368000, formFormula.Fact_uint64(15))
+}
+
+func Test_Combination_uint64(t *testing.T) {
+	assert_uint64(t, 10, formFormula.Combination_uint64(5, 3))
+}
+
+func Test_RecombineModularProgram_ForSingleX(t *testing.T) {
+
+	p, err := formFormula.NewModularProgramFromBracketsString(15, "(()())(())")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var counter uint64 = 0
+
+	ready := func() {
+		counter++
+		fmt.Printf("%5v %v\n", counter, p.Disassemble())
+	}
+
+	possibleXValues := []uint64{0}
+
+	p.Recombine(possibleXValues, 3, ready)
+
+	fmt.Printf("estimation: %v\n", p.GetEstimation(3))
+	assert_uint64(t, p.GetEstimation(3), counter)
 }

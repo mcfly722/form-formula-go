@@ -66,12 +66,12 @@ func Test_Recombine(t *testing.T) {
 
 	counter := 0
 
-	ready := func(remaining *[]*int) {
+	ready := func() {
 		counter++
 		fmt.Printf("%3v %v\n", counter, input)
 	}
 
-	formFormula.RecombineValues(&inputRefs, []int{0, 1, 2}, ready)
+	formFormula.RecombineValues(&inputRefs, &[]int{0, 1, 2}, ready)
 
 	assert_int(t, 3*3*3*3*3, counter)
 }
@@ -82,12 +82,12 @@ func Test_Recombine_EmptyInput(t *testing.T) {
 
 	counter := 0
 
-	ready := func(remaining *[]*int) {
+	ready := func() {
 		counter++
 		fmt.Printf("%3v %v\n", counter, input)
 	}
 
-	formFormula.RecombineValues(&inputRefs, []int{0, 1, 2}, ready)
+	formFormula.RecombineValues(&inputRefs, &[]int{0, 1, 2}, ready)
 
 	assert_int(t, 1, counter)
 }
@@ -98,12 +98,12 @@ func Test_Recombine_EmptyValues(t *testing.T) {
 
 	counter := 0
 
-	ready := func(remaining *[]*int) {
+	ready := func() {
 		counter++
 		fmt.Printf("%3v %v\n", counter, input)
 	}
 
-	formFormula.RecombineValues(&inputRefs, []int{}, ready)
+	formFormula.RecombineValues(&inputRefs, &[]int{}, ready)
 
 	assert_int(t, 1, counter)
 }

@@ -17,27 +17,52 @@ type ProgramModular interface {
 	GetPointersToFunctionsTypes() []*int
 	GetPointersToOperatorsTypes() []*int
 	GetPointersToConstantsOffsets() []*int
+	Recombine(x []uint64, maxXOccurrences int, ready func())
+	GetEstimation(maxXOccurrences int) uint64
 }
 
 type programModular struct {
-	memory     []uint64
-	operations []Operation
-	byModule   uint64
+	memory            []uint64
+	operations        []Operation
+	byModule          uint64
+	possibleConstants []int
+	possibleFunctions []int
+	possibleOperators []int
 }
 
 func initializeMemoryForModularProgram() []uint64 {
 	memory := make([]uint64, len(Constants))
 	memory[ONE] = 1
 	memory[THREE] = 3
+
 	return memory
 }
 
-func NewModularProgram(byModule uint64) ProgramModular {
+func newModularProgram(byModule uint64) *programModular {
 	return &programModular{
 		memory:     initializeMemoryForModularProgram(),
 		operations: []Operation{},
 		byModule:   byModule,
+		possibleConstants: []int{
+			int(ONE),
+			int(MINUS_ONE),
+			int(THREE),
+		},
+		possibleFunctions: []int{
+			int(FCT),
+			int(INVERSE),
+		},
+		possibleOperators: []int{
+			int(SUM),
+			int(MUL),
+			int(POW),
+			int(GCD),
+		},
 	}
+}
+
+func NewModularProgram(byModule uint64) ProgramModular {
+	return newModularProgram(byModule)
 }
 
 func NewModularProgramFromBracketsString(byModule uint64, bracketsString string) (ProgramModular, error) {
@@ -50,13 +75,7 @@ func NewModularProgramFromBracketsString(byModule uint64, bracketsString string)
 		return nil, err
 	}
 
-	operations := []Operation{}
-
-	program := &programModular{
-		memory:     initializeMemoryForModularProgram(),
-		operations: operations,
-		byModule:   byModule,
-	}
+	program := newModularProgram(byModule)
 
 	program.loadFromExpressionTreeRecursive(tree)
 
@@ -217,7 +236,7 @@ func pow2_uint64(x uint64, p uint64, m uint64) uint64 {
 }
 
 // Pow returns x^n % m
-func Pow_uint64(x uint64, n uint64, m uint64) uint64 {
+func Pow_uint64_mod(x uint64, n uint64, m uint64) uint64 {
 	c := n
 
 	result := (uint64)(1)
@@ -249,6 +268,22 @@ func GCD_uint64(a uint64, b uint64) uint64 {
 	return a
 }
 
+func Pow_uint64(n uint64, m int) uint64 {
+	if m == 0 {
+		return 1
+	}
+
+	if m == 1 {
+		return n
+	}
+
+	result := n
+	for i := 2; i <= m; i++ {
+		result *= n
+	}
+	return result
+}
+
 func (program *programModular) Execute() uint64 {
 
 	memory := program.memory
@@ -265,7 +300,7 @@ func (program *programModular) Execute() uint64 {
 		case MUL:
 			memory[memoryResultOffset] = (memory[operation.Operand1Offset] * memory[operation.Operand2Offset]) % program.byModule
 		case POW:
-			memory[memoryResultOffset] = Pow_uint64(memory[operation.Operand1Offset], memory[operation.Operand2Offset], program.byModule)
+			memory[memoryResultOffset] = Pow_uint64_mod(memory[operation.Operand1Offset], memory[operation.Operand2Offset], program.byModule)
 		case GCD:
 			memory[memoryResultOffset] = GCD_uint64(memory[operation.Operand1Offset], memory[operation.Operand2Offset])
 
@@ -277,4 +312,57 @@ func (program *programModular) Execute() uint64 {
 	}
 
 	return program.memory[len(program.memory)-1]
+}
+
+// Recombine function
+// ready(result) is the function which obtain calculation result, if this function returns
+func (program *programModular) Recombine(xValues []uint64, maxXOccurrences int, ready func()) {
+
+	constants := program.GetPointersToConstantsOffsets()
+	functions := program.GetPointersToFunctionsTypes()
+	operations := program.GetPointersToOperatorsTypes()
+
+	for _, x := range xValues {
+		program.SetX(x)
+
+		ready_X_Constants_Functions := func() {
+			RecombineValues(&operations, &program.possibleOperators, ready)
+		}
+
+		ready_X_Constants := func() {
+			RecombineValues(&functions, &program.possibleFunctions, ready_X_Constants_Functions)
+		}
+
+		readyX := func(remainedConstants *[]*int) {
+			RecombineValues(remainedConstants, &program.possibleConstants, ready_X_Constants)
+		}
+
+		RecombineRequiredX(&constants, maxXOccurrences, int(X), readyX)
+	}
+
+}
+
+func (program *programModular) GetEstimation(maxXOccurrences int) uint64 {
+	var sum uint64 = 0
+
+	for i := 1; i <= maxXOccurrences; i++ {
+		sum += Combination_uint64(len(program.GetPointersToConstantsOffsets()), i) * // x
+			Pow_uint64(uint64(len(program.possibleConstants)), len(program.GetPointersToConstantsOffsets())-i) * // remained constants
+			Pow_uint64(uint64(len(program.possibleFunctions)), len(program.GetPointersToFunctionsTypes())) * // functions
+			Pow_uint64(uint64(len(program.possibleOperators)), len(program.GetPointersToOperatorsTypes())) // operators
+	}
+
+	return sum
+}
+
+func Fact_uint64(x int) uint64 {
+	result := uint64(1)
+	for i := 1; i <= x; i++ {
+		result *= uint64(i)
+	}
+	return result
+}
+
+func Combination_uint64(n, k int) uint64 {
+	return Fact_uint64(n) / (Fact_uint64(k) * Fact_uint64(n-k))
 }
