@@ -1,16 +1,5 @@
 package formFormula
 
-type Recombiner interface {
-	RecombineRequiredX(input *[]*int, maxOccurrences int, setXValue int, ready func(remained *[]*int))
-	Recombine(input *[]*int, possibleValues []int, ready func(originalInput *[]*int))
-}
-
-type recombiner struct{}
-
-func NewRecombiner() Recombiner {
-	return &recombiner{}
-}
-
 func recombineRequiredXRecursive(currentPos int, input *[]*int, buffer *[]*int, bufferPos int, ocurrencesLeft int, setValue int, ready func(remained *[]*int)) {
 	if ocurrencesLeft == 0 {
 		if bufferPos < len(*buffer) {
@@ -30,7 +19,7 @@ func recombineRequiredXRecursive(currentPos int, input *[]*int, buffer *[]*int, 
 	}
 }
 
-func (recombiner *recombiner) RecombineRequiredX(input *[]*int, maxOccurrences int, setXValue int, ready func(remained *[]*int)) {
+func RecombineRequiredX(input *[]*int, maxOccurrences int, setXValue int, ready func(remained *[]*int)) {
 	if len(*input) == 0 {
 		ready(input)
 		return
@@ -41,21 +30,21 @@ func (recombiner *recombiner) RecombineRequiredX(input *[]*int, maxOccurrences i
 	}
 }
 
-func (recombiner *recombiner) recombine(input *[]*int, possibleValues []int, ready func(originalInput *[]*int), currentPos int) {
+func recombineValues(input *[]*int, possibleValues []int, ready func(originalInput *[]*int), currentPos int) {
 	for _, value := range possibleValues {
 		*(*input)[currentPos] = value
 		if currentPos == 0 {
 			ready(input)
 		} else {
-			recombiner.recombine(input, possibleValues, ready, currentPos-1)
+			recombineValues(input, possibleValues, ready, currentPos-1)
 		}
 	}
 }
 
-func (recombiner *recombiner) Recombine(input *[]*int, possibleValues []int, ready func(originalInput *[]*int)) {
+func RecombineValues(input *[]*int, possibleValues []int, ready func(originalInput *[]*int)) {
 	if len(*input) == 0 || len(possibleValues) == 0 {
 		ready(input)
 		return
 	}
-	recombiner.recombine(input, possibleValues, ready, len(*input)-1)
+	recombineValues(input, possibleValues, ready, len(*input)-1)
 }
