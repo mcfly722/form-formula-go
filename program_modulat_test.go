@@ -7,6 +7,24 @@ import (
 	formFormula "github.com/form-formula-go"
 )
 
+func defaultTestModularProgram() formFormula.ProgramModular {
+
+	p := formFormula.NewModularProgram(29)
+
+	p.NewOp(
+		formFormula.SUM,
+		(int)(formFormula.ONE),
+		p.NewOp(formFormula.MUL,
+			int(formFormula.X),
+			p.NewOp(formFormula.POW,
+				(int)(formFormula.THREE),
+				p.NewFunc(formFormula.FCT, (int)(formFormula.X)),
+			),
+		),
+	)
+	return p
+}
+
 func Test_ProgramModular_Disassemble(t *testing.T) {
 
 	p := formFormula.NewModularProgram(4)
@@ -35,15 +53,15 @@ func Test_Sub_uint64_2(t *testing.T) {
 }
 
 func Test_Pow_uint64_zero(t *testing.T) {
-	assert_uint64(t, 1, formFormula.Pow_uint64(3453453453, 0, 2342341))
+	assert_uint64(t, 1, formFormula.Pow_uint64_mod(3453453453, 0, 2342341))
 }
 
 func Test_Pow_uint64_one(t *testing.T) {
-	assert_uint64(t, 3453453453%2342341, formFormula.Pow_uint64(3453453453, 1, 2342341))
+	assert_uint64(t, 3453453453%2342341, formFormula.Pow_uint64_mod(3453453453, 1, 2342341))
 }
 
 func Test_Pow_uint64_2326182(t *testing.T) {
-	assert_uint64(t, 2326182, formFormula.Pow_uint64(3453453453, 437483784, 2342341))
+	assert_uint64(t, 2326182, formFormula.Pow_uint64_mod(3453453453, 437483784, 2342341))
 }
 
 func Test_GCD_uint64_primes(t *testing.T) {
@@ -75,4 +93,112 @@ func Test_Execute(t *testing.T) {
 	fmt.Printf("program:%v\n", p.Disassemble())
 
 	assert_uint64(t, 15310, p.Execute())
+}
+
+func Test_ChangeOperators(t *testing.T) {
+	p := defaultTestModularProgram()
+	fmt.Printf("%v\n", p.Disassemble())
+	operatorsAddresses := p.GetPointersToOperatorsTypes()
+	for _, operator := range operatorsAddresses {
+		*operator = int(formFormula.SUB)
+	}
+	assert_string(t, "(1-(x-(3-(x!)))) mod 29", p.Disassemble())
+}
+
+func Test_ChangeConstants(t *testing.T) {
+	p := defaultTestModularProgram()
+	fmt.Printf("%v\n", p.Disassemble())
+	constantsPointers := p.GetPointersToConstantsOffsets()
+	for _, constantPointer := range constantsPointers {
+		*constantPointer = int(formFormula.X)
+	}
+	assert_string(t, "(x+(x*(x^(x!)))) mod 29", p.Disassemble())
+}
+
+func Test_ChangeFunctions(t *testing.T) {
+	p := defaultTestModularProgram()
+	fmt.Printf("%v\n", p.Disassemble())
+	operatorsAddresses := p.GetPointersToFunctionsTypes()
+	for _, operator := range operatorsAddresses {
+		*operator = int(formFormula.INVERSE)
+	}
+	assert_string(t, "(1+(x*(3^(inverse(x))))) mod 29", p.Disassemble())
+}
+
+func Test_NewModularProgramFromBracketsString(t *testing.T) {
+	p, err := formFormula.NewModularProgramFromBracketsString(15, "(()())((()))")
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert_string(t, "((x+x)+((x!)!)) mod 15", p.Disassemble())
+}
+
+func Test_NewModularProgramFromBracketsString_Empty(t *testing.T) {
+	_, err := formFormula.NewModularProgramFromBracketsString(15, "")
+	if err == nil {
+		t.Fatal("error for empty bracket sequence is not catched")
+	}
+	fmt.Printf("Successfully catched error = %v\n", err)
+}
+
+func Test_NewModularProgramFromBracketsString_TwoBracketsPairs(t *testing.T) {
+	p, err := formFormula.NewModularProgramFromBracketsString(15, "()()")
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert_string(t, "(x+x) mod 15", p.Disassemble())
+}
+
+func Test_NewModularProgramFromBracketsString_OneBracketsPair(t *testing.T) {
+	p, err := formFormula.NewModularProgramFromBracketsString(15, "()")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// () is not an constant, it is operation over constant
+	assert_string(t, "(x!) mod 15", p.Disassemble())
+}
+
+func Test_NewModularProgramFromBracketsString_OneBracketsPair2(t *testing.T) {
+	p, err := formFormula.NewModularProgramFromBracketsString(15, "(())")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// () is not an constant, it is operation over constant
+	assert_string(t, "((x!)!) mod 15", p.Disassemble())
+}
+
+func Test_Pow_uint64(t *testing.T) {
+	assert_uint64(t, 1594323, formFormula.Pow_uint64(3, 13))
+}
+
+func Test_Fact_uint64(t *testing.T) {
+	assert_uint64(t, 1307674368000, formFormula.Fact_uint64(15))
+}
+
+func Test_Combination_uint64(t *testing.T) {
+	assert_uint64(t, 10, formFormula.Combination_uint64(5, 3))
+}
+
+func Test_RecombineModularProgram_ForSingleX(t *testing.T) {
+
+	p, err := formFormula.NewModularProgramFromBracketsString(15, "(()())(())")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var counter uint64 = 0
+
+	ready := func() {
+		counter++
+		fmt.Printf("%5v %v\n", counter, p.Disassemble())
+	}
+
+	possibleXValues := []uint64{0}
+
+	p.Recombine(possibleXValues, 3, ready)
+
+	fmt.Printf("estimation: %v\n", p.GetEstimation(3))
+	assert_uint64(t, p.GetEstimation(3), counter)
 }
