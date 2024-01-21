@@ -14,9 +14,6 @@ type ProgramModular interface {
 	Disassemble() string
 	Dump() string
 	Execute() uint64
-	GetPointersToFunctionsTypes() []*uint
-	GetPointersToOperatorsTypes() []*uint
-	GetPointersToConstantsOffsets() []*uint
 	Recombine(x []uint64, maxXOccurrences uint, ready func())
 	GetEstimation(maxXOccurrences uint) uint64
 }
@@ -123,7 +120,7 @@ func (program *programModular) loadFromExpressionTreeRecursive(node *Expression)
 	}
 }
 
-func (program *programModular) GetPointersToFunctionsTypes() []*uint {
+func (program *programModular) getPointersToFunctionsTypes() []*uint {
 	result := []*uint{}
 	l := len(program.operations)
 	for i := 0; i < l; i++ {
@@ -134,7 +131,7 @@ func (program *programModular) GetPointersToFunctionsTypes() []*uint {
 	return result
 }
 
-func (program *programModular) GetPointersToOperatorsTypes() []*uint {
+func (program *programModular) getPointersToOperatorsTypes() []*uint {
 	result := []*uint{}
 	l := len(program.operations)
 	for i := 0; i < l; i++ {
@@ -145,7 +142,7 @@ func (program *programModular) GetPointersToOperatorsTypes() []*uint {
 	return result
 }
 
-func (program *programModular) GetPointersToConstantsOffsets() []*uint {
+func (program *programModular) getPointersToConstantsOffsets() []*uint {
 	constantsRange := uint(len(Constants))
 	result := []*uint{}
 
@@ -321,9 +318,9 @@ func (program *programModular) Execute() uint64 {
 // ready(result) is the function which obtain calculation result, if this function returns
 func (program *programModular) Recombine(xValues []uint64, maxXOccurrences uint, ready func()) {
 
-	constants := program.GetPointersToConstantsOffsets()
-	functions := program.GetPointersToFunctionsTypes()
-	operations := program.GetPointersToOperatorsTypes()
+	constants := program.getPointersToConstantsOffsets()
+	functions := program.getPointersToFunctionsTypes()
+	operations := program.getPointersToOperatorsTypes()
 
 	for _, x := range xValues {
 		program.SetX(x)
@@ -349,10 +346,10 @@ func (program *programModular) GetEstimation(maxXOccurrences uint) uint64 {
 	var sum uint64 = 0
 
 	for i := uint(1); i <= maxXOccurrences; i++ {
-		sum += Internal_Combination_uint64(len(program.GetPointersToConstantsOffsets()), int(i)) * // x
-			Internal_Pow_uint64(uint64(len(program.possibleConstants)), len(program.GetPointersToConstantsOffsets())-int(i)) * // remained constants
-			Internal_Pow_uint64(uint64(len(program.possibleFunctions)), len(program.GetPointersToFunctionsTypes())) * // functions
-			Internal_Pow_uint64(uint64(len(program.possibleOperators)), len(program.GetPointersToOperatorsTypes())) // operators
+		sum += Internal_Combination_uint64(len(program.getPointersToConstantsOffsets()), int(i)) * // x
+			Internal_Pow_uint64(uint64(len(program.possibleConstants)), len(program.getPointersToConstantsOffsets())-int(i)) * // remained constants
+			Internal_Pow_uint64(uint64(len(program.possibleFunctions)), len(program.getPointersToFunctionsTypes())) * // functions
+			Internal_Pow_uint64(uint64(len(program.possibleOperators)), len(program.getPointersToOperatorsTypes())) // operators
 	}
 
 	return sum
