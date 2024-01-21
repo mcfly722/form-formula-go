@@ -97,39 +97,6 @@ func Test_Execute(t *testing.T) {
 	assert_uint64(t, 15310, p.Execute())
 }
 
-/*
-func Test_ChangeOperators(t *testing.T) {
-	p := defaultTestModularProgram()
-	fmt.Printf("%v\n", p.Disassemble())
-	operatorsAddresses := p.GetPointersToOperatorsTypes()
-	for _, operator := range operatorsAddresses {
-		*operator = int(formFormula.SUB)
-	}
-	assert_string(t, "(1-(x-(3-(x!)))) mod 29", p.Disassemble())
-}
-
-func Test_ChangeConstants(t *testing.T) {
-	p := defaultTestModularProgram()
-	fmt.Printf("%v\n", p.Disassemble())
-	constantsPointers := p.GetPointersToConstantsOffsets()
-	for _, constantPointer := range constantsPointers {
-		*constantPointer = int(formFormula.X)
-	}
-	assert_string(t, "(x+(x*(x^(x!)))) mod 29", p.Disassemble())
-}
-
-func Test_ChangeFunctions(t *testing.T) {
-	p := defaultTestModularProgram()
-	fmt.Printf("%v\n", p.Disassemble())
-	operatorsAddresses := p.GetPointersToFunctionsTypes()
-	for _, operator := range operatorsAddresses {
-		*operator = int(formFormula.INVERSE)
-	}
-	assert_string(t, "(1+(x*(3^(inverse(x))))) mod 29", p.Disassemble())
-}
-
-*/
-
 func Test_NewModularProgramFromBracketsString(t *testing.T) {
 	p, err := formFormula.NewModularProgramFromBracketsString(15, "(()())((()))")
 	if err != nil {
@@ -237,6 +204,19 @@ func Test_ModularProgram_UnknownOperationType(t *testing.T) {
 	p.Execute()
 
 	t.Fatal("panic not catched!")
+}
+
+func Test_ModularProgram_Function_FactFact(t *testing.T) {
+	p := formFormula.NewModularProgram(5)
+
+	p.NewFunc(
+		formFormula.FCT,
+		p.NewFunc(
+			formFormula.FCT,
+			uint(formFormula.X),
+		),
+	)
+	assert_string(t, "((x!)!) mod 5", p.Disassemble())
 }
 
 func Test_ModularProgram_NewModularProgramFromBracketsString_Error(t *testing.T) {
