@@ -2,7 +2,7 @@ package formFormula
 
 import "fmt"
 
-type OffsetMEM int
+type OffsetMEM uint
 
 const (
 	UNDEFINED OffsetMEM = 0
@@ -18,7 +18,7 @@ const (
 	THREE     OffsetMEM = 10
 )
 
-type OperationType int
+type OperationType uint
 
 const (
 	NOTHING OperationType = 0
@@ -33,8 +33,8 @@ const (
 )
 
 type Operation struct {
-	Operand1Offset int
-	Operand2Offset int
+	Operand1Offset uint
+	Operand2Offset uint
 	OperationType  OperationType
 }
 
@@ -63,3 +63,5 @@ var operations = map[OperationType](func(val1 string, val2 string) string){
 	GCD:     func(val1 string, val2 string) string { return fmt.Sprintf("gcd(%v,%v)", val1, val2) },
 	INVERSE: func(val1 string, val2 string) string { return fmt.Sprintf("inverse(%v)", val1) },
 }
+
+const defaultErrorUIntValue = ^uint(0)

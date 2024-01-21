@@ -45,7 +45,7 @@ func testBracketsToExpressionTreeError(t *testing.T, testSequence string) {
 	}
 }
 
-func testGetNextBracketsSequenceError(t *testing.T, sequence string, maxChilds int) {
+func testGetNextBracketsSequenceError(t *testing.T, sequence string, maxChilds uint) {
 	_, err := formFormula.GetNextBracketsSequence(sequence, maxChilds)
 	if err == nil {
 		t.Fatal("not catched error")

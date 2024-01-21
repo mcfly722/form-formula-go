@@ -9,25 +9,25 @@ import (
 
 type ProgramModular interface {
 	SetX(x uint64)
-	NewFunc(operationType OperationType, operand1Offset int) int
-	NewOp(operationType OperationType, operand1Offset int, operand2Offset int) int
+	NewFunc(operationType OperationType, operand1Offset uint) uint
+	NewOp(operationType OperationType, operand1Offset uint, operand2Offset uint) uint
 	Disassemble() string
 	Dump() string
 	Execute() uint64
-	GetPointersToFunctionsTypes() []*int
-	GetPointersToOperatorsTypes() []*int
-	GetPointersToConstantsOffsets() []*int
-	Recombine(x []uint64, maxXOccurrences int, ready func())
-	GetEstimation(maxXOccurrences int) uint64
+	GetPointersToFunctionsTypes() []*uint
+	GetPointersToOperatorsTypes() []*uint
+	GetPointersToConstantsOffsets() []*uint
+	Recombine(x []uint64, maxXOccurrences uint, ready func())
+	GetEstimation(maxXOccurrences uint) uint64
 }
 
 type programModular struct {
 	memory            []uint64
 	operations        []Operation
 	byModule          uint64
-	possibleConstants []int
-	possibleFunctions []int
-	possibleOperators []int
+	possibleConstants []uint
+	possibleFunctions []uint
+	possibleOperators []uint
 }
 
 func initializeMemoryForModularProgram() []uint64 {
@@ -43,20 +43,20 @@ func newModularProgram(byModule uint64) *programModular {
 		memory:     initializeMemoryForModularProgram(),
 		operations: []Operation{},
 		byModule:   byModule,
-		possibleConstants: []int{
-			int(ONE),
-			int(MINUS_ONE),
-			int(THREE),
+		possibleConstants: []uint{
+			uint(ONE),
+			uint(MINUS_ONE),
+			uint(THREE),
 		},
-		possibleFunctions: []int{
-			int(FCT),
-			int(INVERSE),
+		possibleFunctions: []uint{
+			uint(FCT),
+			uint(INVERSE),
 		},
-		possibleOperators: []int{
-			int(SUM),
-			int(MUL),
-			int(POW),
-			int(GCD),
+		possibleOperators: []uint{
+			uint(SUM),
+			uint(MUL),
+			uint(POW),
+			uint(GCD),
 		},
 	}
 }
@@ -85,14 +85,14 @@ func NewModularProgramFromBracketsString(byModule uint64, bracketsString string)
 	return program, nil
 }
 
-func (program *programModular) loadFromExpressionTreeRecursive(node *Expression) (int, error) {
+func (program *programModular) loadFromExpressionTreeRecursive(node *Expression) (uint, error) {
 	switch len(node.Arguments) {
 	case 0:
-		return int(X), nil
+		return uint(X), nil
 	case 1:
 		argumentOffset, err := program.loadFromExpressionTreeRecursive(node.Arguments[0])
 		if err != nil {
-			return -1, err
+			return defaultErrorUIntValue, err
 		}
 		operation := Operation{
 			Operand1Offset: argumentOffset,
@@ -100,15 +100,15 @@ func (program *programModular) loadFromExpressionTreeRecursive(node *Expression)
 		}
 		program.memory = append(program.memory, 0)
 		program.operations = append(program.operations, operation)
-		return len(program.memory) - 1, nil
+		return uint(len(program.memory) - 1), nil
 	case 2:
 		argumentOffset1, err := program.loadFromExpressionTreeRecursive(node.Arguments[0])
 		if err != nil {
-			return -1, err
+			return defaultErrorUIntValue, err
 		}
 		argumentOffset2, err := program.loadFromExpressionTreeRecursive(node.Arguments[1])
 		if err != nil {
-			return -1, err
+			return defaultErrorUIntValue, err
 		}
 		operation := Operation{
 			Operand1Offset: argumentOffset1,
@@ -117,37 +117,37 @@ func (program *programModular) loadFromExpressionTreeRecursive(node *Expression)
 		}
 		program.memory = append(program.memory, 0)
 		program.operations = append(program.operations, operation)
-		return len(program.memory) - 1, nil
+		return uint(len(program.memory) - 1), nil
 	default:
-		return -1, errors.New("three arguments not supported by modular arithmetic")
+		return defaultErrorUIntValue, errors.New("three arguments not supported by modular arithmetic")
 	}
 }
 
-func (program *programModular) GetPointersToFunctionsTypes() []*int {
-	result := []*int{}
+func (program *programModular) GetPointersToFunctionsTypes() []*uint {
+	result := []*uint{}
 	l := len(program.operations)
 	for i := 0; i < l; i++ {
 		if program.operations[i].Operand2Offset == 0 {
-			result = append(result, (*int)(&program.operations[i].OperationType))
+			result = append(result, (*uint)(&program.operations[i].OperationType))
 		}
 	}
 	return result
 }
 
-func (program *programModular) GetPointersToOperatorsTypes() []*int {
-	result := []*int{}
+func (program *programModular) GetPointersToOperatorsTypes() []*uint {
+	result := []*uint{}
 	l := len(program.operations)
 	for i := 0; i < l; i++ {
 		if program.operations[i].Operand2Offset != 0 {
-			result = append(result, (*int)(&program.operations[i].OperationType))
+			result = append(result, (*uint)(&program.operations[i].OperationType))
 		}
 	}
 	return result
 }
 
-func (program *programModular) GetPointersToConstantsOffsets() []*int {
-	constantsRange := len(Constants)
-	result := []*int{}
+func (program *programModular) GetPointersToConstantsOffsets() []*uint {
+	constantsRange := uint(len(Constants))
+	result := []*uint{}
 
 	l := len(program.operations)
 
@@ -169,49 +169,49 @@ func (program *programModular) SetX(x uint64) {
 	program.memory[X] = x
 }
 
-func (program *programModular) NewFunc(operationType OperationType, operand1Offset int) int {
+func (program *programModular) NewFunc(operationType OperationType, operand1Offset uint) uint {
 
 	program.memory = append(program.memory, 666)
 	resultAddr := len(program.memory) - 1
 
 	newOp := Operation{
-		Operand1Offset: operand1Offset,
+		Operand1Offset: uint(operand1Offset),
 		OperationType:  operationType,
 	}
 
 	program.operations = append(program.operations, newOp)
 
-	return resultAddr
+	return uint(resultAddr)
 }
 
-func (program *programModular) NewOp(operationType OperationType, operand1Offset int, operand2Offset int) int {
+func (program *programModular) NewOp(operationType OperationType, operand1Offset uint, operand2Offset uint) uint {
 	program.memory = append(program.memory, 666)
 
 	newOp := Operation{
-		Operand1Offset: operand1Offset,
-		Operand2Offset: operand2Offset,
+		Operand1Offset: uint(operand1Offset),
+		Operand2Offset: uint(operand2Offset),
 		OperationType:  operationType,
 	}
 	program.operations = append(program.operations, newOp)
-	return len(program.memory) - 1
+	return uint(len(program.memory) - 1)
 }
 
 func (program *programModular) toString(operation *Operation) string {
 	val1 := ""
 	val2 := ""
 
-	if operation.Operand1Offset < len(Constants) {
+	if operation.Operand1Offset < uint(len(Constants)) {
 		val1 = Constants[(OffsetMEM)(operation.Operand1Offset)]
 	} else {
-		op := program.operations[operation.Operand1Offset-len(Constants)]
+		op := program.operations[int(operation.Operand1Offset)-len(Constants)]
 		val1 += fmt.Sprintf("(%v)", program.toString(&op))
 	}
 
 	if operation.Operand2Offset != 0 {
-		if operation.Operand2Offset < len(Constants) {
+		if operation.Operand2Offset < uint(len(Constants)) {
 			val2 = Constants[(OffsetMEM)(operation.Operand2Offset)]
 		} else {
-			op := program.operations[operation.Operand2Offset-len(Constants)]
+			op := program.operations[int(operation.Operand2Offset)-len(Constants)]
 			val2 = fmt.Sprintf("(%v)", program.toString(&op))
 		}
 	}
@@ -319,7 +319,7 @@ func (program *programModular) Execute() uint64 {
 
 // Recombine function
 // ready(result) is the function which obtain calculation result, if this function returns
-func (program *programModular) Recombine(xValues []uint64, maxXOccurrences int, ready func()) {
+func (program *programModular) Recombine(xValues []uint64, maxXOccurrences uint, ready func()) {
 
 	constants := program.GetPointersToConstantsOffsets()
 	functions := program.GetPointersToFunctionsTypes()
@@ -336,21 +336,21 @@ func (program *programModular) Recombine(xValues []uint64, maxXOccurrences int, 
 			RecombineValues(&functions, &program.possibleFunctions, ready_X_Constants_Functions)
 		}
 
-		readyX := func(remainedConstants *[]*int) {
+		readyX := func(remainedConstants *[]*uint) {
 			RecombineValues(remainedConstants, &program.possibleConstants, ready_X_Constants)
 		}
 
-		RecombineRequiredX(&constants, maxXOccurrences, int(X), readyX)
+		RecombineRequiredX(&constants, maxXOccurrences, uint(X), readyX)
 	}
 
 }
 
-func (program *programModular) GetEstimation(maxXOccurrences int) uint64 {
+func (program *programModular) GetEstimation(maxXOccurrences uint) uint64 {
 	var sum uint64 = 0
 
-	for i := 1; i <= maxXOccurrences; i++ {
-		sum += Combination_uint64(len(program.GetPointersToConstantsOffsets()), i) * // x
-			Pow_uint64(uint64(len(program.possibleConstants)), len(program.GetPointersToConstantsOffsets())-i) * // remained constants
+	for i := uint(1); i <= maxXOccurrences; i++ {
+		sum += Combination_uint64(len(program.GetPointersToConstantsOffsets()), int(i)) * // x
+			Pow_uint64(uint64(len(program.possibleConstants)), len(program.GetPointersToConstantsOffsets())-int(i)) * // remained constants
 			Pow_uint64(uint64(len(program.possibleFunctions)), len(program.GetPointersToFunctionsTypes())) * // functions
 			Pow_uint64(uint64(len(program.possibleOperators)), len(program.GetPointersToOperatorsTypes())) // operators
 	}

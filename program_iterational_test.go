@@ -13,10 +13,10 @@ func Test_ProgramIterational_Disassemble(t *testing.T) {
 
 	p.NewOp(
 		formFormula.SUM,
-		p.NewFunc(formFormula.FCT, (int)(formFormula.I)),
+		p.NewFunc(formFormula.FCT, uint(formFormula.I)),
 		p.NewOp(formFormula.MUL,
-			int(formFormula.X),
-			p.NewFunc(formFormula.FCT, (int)(formFormula.E)),
+			uint(formFormula.X),
+			p.NewFunc(formFormula.FCT, uint(formFormula.E)),
 		),
 	)
 
@@ -30,10 +30,10 @@ func Test_ProgramIterational_Execute(t *testing.T) {
 
 	p.NewOp(
 		formFormula.MUL,
-		int(formFormula.E),
+		uint(formFormula.E),
 		p.NewOp(formFormula.SUM,
-			int(formFormula.X),
-			int(formFormula.PI),
+			uint(formFormula.X),
+			uint(formFormula.PI),
 		),
 	)
 
@@ -50,8 +50,8 @@ func Test_ProgramIterational_ExecuteWithIterations_I(t *testing.T) {
 
 	p.NewOp(
 		formFormula.SUM,
-		int(formFormula.PVX),
-		int(formFormula.I),
+		uint(formFormula.PVX),
+		uint(formFormula.I),
 	)
 
 	// 3+1=4
@@ -66,8 +66,8 @@ func Test_ProgramIterational_ExecuteWithIterations_PVX(t *testing.T) {
 
 	p.NewOp(
 		formFormula.SUM,
-		int(formFormula.PVX),
-		int(formFormula.MINUS_ONE),
+		uint(formFormula.PVX),
+		uint(formFormula.MINUS_ONE),
 	)
 
 	// 10-1=9
@@ -83,8 +83,8 @@ func Test_ProgramIterational_ExecuteWithIterations_PV0(t *testing.T) {
 
 	p.NewOp(
 		formFormula.SUM,
-		int(formFormula.PV0),
-		int(formFormula.X),
+		uint(formFormula.PV0),
+		uint(formFormula.X),
 	)
 
 	//  0-2=-2
@@ -99,8 +99,8 @@ func Test_IterationalProgram_UnknownOperationType(t *testing.T) {
 
 	p.NewOp(
 		666,
-		(int)(formFormula.ONE),
-		(int)(formFormula.ONE),
+		uint(formFormula.ONE),
+		uint(formFormula.ONE),
 	)
 
 	defer func(t *testing.T) {
@@ -157,8 +157,8 @@ func Test_ProgramIterational_Infinity(t *testing.T) {
 
 	p.NewOp(
 		formFormula.DIV,
-		int(formFormula.ONE),
-		int(formFormula.X),
+		uint(formFormula.ONE),
+		uint(formFormula.X),
 	)
 
 	assert_string(t, "1/x", p.Disassemble())
@@ -172,7 +172,7 @@ func Test_ProgramIterational_Nothing(t *testing.T) {
 
 	p.NewFunc(
 		formFormula.NOTHING,
-		int(formFormula.X),
+		uint(formFormula.X),
 	)
 
 	assert_string(t, "nothing(x)", p.Disassemble())

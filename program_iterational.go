@@ -8,8 +8,8 @@ import (
 
 type ProgramIterational interface {
 	SetX(x float64)
-	NewFunc(operationType OperationType, operand1Offset int) int
-	NewOp(operationType OperationType, operand1Offset int, operand2Offset int) int
+	NewFunc(operationType OperationType, operand1Offset uint) uint
+	NewOp(operationType OperationType, operand1Offset uint, operand2Offset uint) uint
 	Disassemble() string
 	Dump() string
 	Execute() float64
@@ -86,14 +86,14 @@ func NewIterationalProgramFromBracketsString(bracketsString string) (ProgramIter
 	return program, nil
 }
 
-func (program *programIterational) loadFromExpressionTreeRecursive(node *Expression) (int, error) {
+func (program *programIterational) loadFromExpressionTreeRecursive(node *Expression) (uint, error) {
 	switch len(node.Arguments) {
 	case 0:
-		return int(X), nil
+		return uint(X), nil
 	case 1:
 		argumentOffset, err := program.loadFromExpressionTreeRecursive(node.Arguments[0])
 		if err != nil {
-			return -1, err
+			return defaultErrorUIntValue, err
 		}
 		operation := Operation{
 			Operand1Offset: argumentOffset,
@@ -101,15 +101,15 @@ func (program *programIterational) loadFromExpressionTreeRecursive(node *Express
 		}
 		program.memory = append(program.memory, 0)
 		program.operations = append(program.operations, operation)
-		return len(program.memory) - 1, nil
+		return uint(len(program.memory) - 1), nil
 	case 2:
 		argumentOffset1, err := program.loadFromExpressionTreeRecursive(node.Arguments[0])
 		if err != nil {
-			return -1, err
+			return defaultErrorUIntValue, err
 		}
 		argumentOffset2, err := program.loadFromExpressionTreeRecursive(node.Arguments[1])
 		if err != nil {
-			return -1, err
+			return defaultErrorUIntValue, err
 		}
 		operation := Operation{
 			Operand1Offset: argumentOffset1,
@@ -118,9 +118,9 @@ func (program *programIterational) loadFromExpressionTreeRecursive(node *Express
 		}
 		program.memory = append(program.memory, 0)
 		program.operations = append(program.operations, operation)
-		return len(program.memory) - 1, nil
+		return uint(len(program.memory) - 1), nil
 	default:
-		return -1, errors.New("three arguments not supported by modular arithmetic")
+		return defaultErrorUIntValue, errors.New("three arguments not supported by modular arithmetic")
 	}
 }
 
@@ -128,10 +128,10 @@ func (program *programIterational) SetX(x float64) {
 	program.memory[X] = x
 }
 
-func (program *programIterational) NewFunc(operationType OperationType, operand1Offset int) int {
+func (program *programIterational) NewFunc(operationType OperationType, operand1Offset uint) uint {
 
 	program.memory = append(program.memory, 666)
-	resultAddr := len(program.memory) - 1
+	resultAddr := uint(len(program.memory) - 1)
 
 	newOp := Operation{
 		Operand1Offset: operand1Offset,
@@ -143,7 +143,7 @@ func (program *programIterational) NewFunc(operationType OperationType, operand1
 	return resultAddr
 }
 
-func (program *programIterational) NewOp(operationType OperationType, operand1Offset int, operand2Offset int) int {
+func (program *programIterational) NewOp(operationType OperationType, operand1Offset uint, operand2Offset uint) uint {
 	program.memory = append(program.memory, 666)
 
 	newOp := Operation{
@@ -152,25 +152,25 @@ func (program *programIterational) NewOp(operationType OperationType, operand1Of
 		OperationType:  operationType,
 	}
 	program.operations = append(program.operations, newOp)
-	return len(program.memory) - 1
+	return uint(len(program.memory) - 1)
 }
 
 func (program *programIterational) toString(operation *Operation) string {
 	val1 := ""
 	val2 := ""
 
-	if operation.Operand1Offset < len(Constants) {
+	if operation.Operand1Offset < uint(len(Constants)) {
 		val1 = Constants[(OffsetMEM)(operation.Operand1Offset)]
 	} else {
-		op := program.operations[operation.Operand1Offset-len(Constants)]
+		op := program.operations[int(operation.Operand1Offset)-len(Constants)]
 		val1 += fmt.Sprintf("(%v)", program.toString(&op))
 	}
 
 	if operation.Operand2Offset != 0 {
-		if operation.Operand2Offset < len(Constants) {
+		if operation.Operand2Offset < uint(len(Constants)) {
 			val2 = Constants[(OffsetMEM)(operation.Operand2Offset)]
 		} else {
-			op := program.operations[operation.Operand2Offset-len(Constants)]
+			op := program.operations[int(operation.Operand2Offset)-len(Constants)]
 			val2 = fmt.Sprintf("(%v)", program.toString(&op))
 		}
 	}

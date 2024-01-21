@@ -2,6 +2,8 @@ package formFormula
 
 import "fmt"
 
+const max_supported_diagonals = 32
+
 type Expression struct {
 	Arguments []*Expression
 }
@@ -101,7 +103,7 @@ func brackets2points(brackets string) ([]bracketStep, int, error) {
 	return points, (totalOpens + totalCloses) / 2, nil
 }
 
-func recursionNext(srcBracketsStack []bracketStep, dstBracketsStack []bracketStep, _x int, _y int, maxBracketPairs int, maxChilds int, diagonal [32]int, currentRecursionStep int, previousSolutionAlreadyReached bool) ([]bracketStep, bool, bool) {
+func recursionNext(srcBracketsStack []bracketStep, dstBracketsStack []bracketStep, _x int, _y int, maxBracketPairs int, maxChilds uint, diagonal [max_supported_diagonals]uint, currentRecursionStep int, previousSolutionAlreadyReached bool) ([]bracketStep, bool, bool) {
 	if _x == maxBracketPairs && _y == maxBracketPairs {
 		if !previousSolutionAlreadyReached && len(srcBracketsStack) > 0 {
 			return []bracketStep{}, true, false
@@ -159,14 +161,14 @@ func bracketsStepsToString(tail []bracketStep) string {
 }
 
 // GetNextBracketsSequence get current brackets representation of tree and return next one tree in brackets representation
-func GetNextBracketsSequence(brackets string, maxChilds int) (string, error) {
+func GetNextBracketsSequence(brackets string, maxChilds uint) (string, error) {
 
 	bracketsStack, maxBracketPairs, err := brackets2points(brackets)
 	if err != nil {
 		return "", err
 	}
 
-	diagonal := [32]int{}
+	diagonal := [32]uint{}
 
 	if len(bracketsStack) == 1 {
 		bracketsStack = []bracketStep{}
