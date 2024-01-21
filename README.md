@@ -18,18 +18,18 @@ Leafs of this tree are values of:
 * iteration number or
 * previous calculated value
 
-##### Example 1 - Computing exp(z) using [Euler formula](https://en.wikipedia.org/wiki/Euler%27s_formula):<br>
+##### <u>Example 1 - Computing exp(z) using [Euler formula](https://en.wikipedia.org/wiki/Euler%27s_formula):</u>
 ![alt tag](https://wikimedia.org/api/rest_v1/media/math/render/svg/6a91595ef0946463456b2d0184bdcdb2ae9da7a2)
 
 recursive function would be:<br><br> ![alt tag](https://chart.googleapis.com/chart?cht=tx&chl=z^n/n!%2bpv0) (n=...,6,5,4,3,2,1,0)
 (<b>pv0</b> means what first value would be equal to 0)
 <br>
-##### Example 2 - Computing Pi using [Wallis product](https://en.wikipedia.org/wiki/Wallis_product):<br>
+##### <u>Example 2 - Computing Pi using [Wallis product](https://en.wikipedia.org/wiki/Wallis_product):</u>
 ![alt tag](https://wikimedia.org/api/rest_v1/media/math/render/svg/df59bf8aa67b6dff8be6cffb4f59777cea828454)<br>
 last product could not be equal to 0, otherwise all final product will be equal to 0 too
 <br><br><br>
 * <b>pv = x<br></b>
-##### Example 3 - Computing square root using [Geron iteration formula](https://ru.wikipedia.org/wiki/%D0%98%D1%82%D0%B5%D1%80%D0%B0%D1%86%D0%B8%D0%BE%D0%BD%D0%BD%D0%B0%D1%8F_%D1%84%D0%BE%D1%80%D0%BC%D1%83%D0%BB%D0%B0_%D0%93%D0%B5%D1%80%D0%BE%D0%BD%D0%B0):<br>
+##### <u>Example 3 - Computing square root using [Geron iteration formula](https://ru.wikipedia.org/wiki/%D0%98%D1%82%D0%B5%D1%80%D0%B0%D1%86%D0%B8%D0%BE%D0%BD%D0%BD%D0%B0%D1%8F_%D1%84%D0%BE%D1%80%D0%BC%D1%83%D0%BB%D0%B0_%D0%93%D0%B5%D1%80%D0%BE%D0%BD%D0%B0):</u>
  ![alt tag](https://wikimedia.org/api/rest_v1/media/math/render/svg/9935d6f7061161b29325d712518fb58496f58bfb)<br>
  ![alt tag](https://wikimedia.org/api/rest_v1/media/math/render/svg/cd0d9bc3389f73d8501bfef1303b06246d81f771)<br>
  ![alt tag](https://wikimedia.org/api/rest_v1/media/math/render/svg/a8788bf85d532fa88d1fb25eff6ae382a601c308) could not be 0 or 1 and should be equal to initial function argument x
