@@ -7,6 +7,7 @@ import (
 	formFormula "github.com/form-formula-go"
 )
 
+/*
 func defaultTestModularProgram() formFormula.ProgramModular {
 
 	p := formFormula.NewModularProgram(29)
@@ -24,6 +25,7 @@ func defaultTestModularProgram() formFormula.ProgramModular {
 	)
 	return p
 }
+*/
 
 func Test_ProgramModular_Disassemble(t *testing.T) {
 
@@ -45,32 +47,32 @@ func Test_ProgramModular_Disassemble(t *testing.T) {
 }
 
 func Test_Sub_uint64_1(t *testing.T) {
-	assert_uint64(t, 2, formFormula.Sub_uint64(3, 5, 4))
+	assert_uint64(t, 2, formFormula.Internal_Sub_uint64(3, 5, 4))
 }
 
 func Test_Sub_uint64_2(t *testing.T) {
-	assert_uint64(t, 0, formFormula.Sub_uint64(3, 3, 4))
+	assert_uint64(t, 0, formFormula.Internal_Sub_uint64(3, 3, 4))
 }
 
 func Test_Pow_uint64_zero(t *testing.T) {
-	assert_uint64(t, 1, formFormula.Pow_uint64_mod(3453453453, 0, 2342341))
+	assert_uint64(t, 1, formFormula.Internal_Pow_uint64_mod(3453453453, 0, 2342341))
 }
 
 func Test_Pow_uint64_one(t *testing.T) {
-	assert_uint64(t, 3453453453%2342341, formFormula.Pow_uint64_mod(3453453453, 1, 2342341))
+	assert_uint64(t, 3453453453%2342341, formFormula.Internal_Pow_uint64_mod(3453453453, 1, 2342341))
 }
 
 func Test_Pow_uint64_2326182(t *testing.T) {
-	assert_uint64(t, 2326182, formFormula.Pow_uint64_mod(3453453453, 437483784, 2342341))
+	assert_uint64(t, 2326182, formFormula.Internal_Pow_uint64_mod(3453453453, 437483784, 2342341))
 }
 
 func Test_GCD_uint64_primes(t *testing.T) {
-	assert_uint64(t, 1, formFormula.GCD_uint64(2867395040399, 6816348081737))
+	assert_uint64(t, 1, formFormula.Internal_GCD_uint64(2867395040399, 6816348081737))
 }
 
 func Test_GCD_uint64(t *testing.T) {
 	prime := (uint64)(634741)
-	assert_uint64(t, prime, formFormula.GCD_uint64(prime*233837, prime*975643))
+	assert_uint64(t, prime, formFormula.Internal_GCD_uint64(prime*233837, prime*975643))
 }
 
 func Test_Execute(t *testing.T) {
@@ -170,15 +172,15 @@ func Test_NewModularProgramFromBracketsString_OneBracketsPair2(t *testing.T) {
 }
 
 func Test_Pow_uint64(t *testing.T) {
-	assert_uint64(t, 1594323, formFormula.Pow_uint64(3, 13))
+	assert_uint64(t, 1594323, formFormula.Internal_Pow_uint64(3, 13))
 }
 
 func Test_Fact_uint64(t *testing.T) {
-	assert_uint64(t, 1307674368000, formFormula.Fact_uint64(15))
+	assert_uint64(t, 1307674368000, formFormula.Internal_Fact_uint64(15))
 }
 
 func Test_Combination_uint64(t *testing.T) {
-	assert_uint64(t, 10, formFormula.Combination_uint64(5, 3))
+	assert_uint64(t, 10, formFormula.Internal_Combination_uint64(5, 3))
 }
 
 func Test_RecombineModularProgram_ForSingleX(t *testing.T) {

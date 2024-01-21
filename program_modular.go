@@ -239,7 +239,7 @@ func pow2_uint64(x uint64, p uint64, m uint64) uint64 {
 }
 
 // Pow returns x^n % m
-func Pow_uint64_mod(x uint64, n uint64, m uint64) uint64 {
+func Internal_Pow_uint64_mod(x uint64, n uint64, m uint64) uint64 {
 	c := n
 
 	result := (uint64)(1)
@@ -256,11 +256,11 @@ func Pow_uint64_mod(x uint64, n uint64, m uint64) uint64 {
 }
 
 // Sub returns (m+a-b) % m
-func Sub_uint64(a uint64, b uint64, m uint64) uint64 {
+func Internal_Sub_uint64(a uint64, b uint64, m uint64) uint64 {
 	return (m + a - b) % m
 }
 
-func GCD_uint64(a uint64, b uint64) uint64 {
+func Internal_GCD_uint64(a uint64, b uint64) uint64 {
 	for a != b {
 		if a > b {
 			a -= b
@@ -271,7 +271,7 @@ func GCD_uint64(a uint64, b uint64) uint64 {
 	return a
 }
 
-func Pow_uint64(n uint64, m int) uint64 {
+func Internal_Pow_uint64(n uint64, m int) uint64 {
 	if m == 0 {
 		return 1
 	}
@@ -299,13 +299,13 @@ func (program *programModular) Execute() uint64 {
 		case SUM:
 			memory[memoryResultOffset] = (memory[operation.Operand1Offset] + memory[operation.Operand2Offset]) % program.byModule
 		case SUB:
-			memory[memoryResultOffset] = Sub_uint64(memory[operation.Operand1Offset], memory[operation.Operand2Offset], program.byModule)
+			memory[memoryResultOffset] = Internal_Sub_uint64(memory[operation.Operand1Offset], memory[operation.Operand2Offset], program.byModule)
 		case MUL:
 			memory[memoryResultOffset] = (memory[operation.Operand1Offset] * memory[operation.Operand2Offset]) % program.byModule
 		case POW:
-			memory[memoryResultOffset] = Pow_uint64_mod(memory[operation.Operand1Offset], memory[operation.Operand2Offset], program.byModule)
+			memory[memoryResultOffset] = Internal_Pow_uint64_mod(memory[operation.Operand1Offset], memory[operation.Operand2Offset], program.byModule)
 		case GCD:
-			memory[memoryResultOffset] = GCD_uint64(memory[operation.Operand1Offset], memory[operation.Operand2Offset])
+			memory[memoryResultOffset] = Internal_GCD_uint64(memory[operation.Operand1Offset], memory[operation.Operand2Offset])
 
 		default:
 			panic(fmt.Sprintf("unknown operationType=%v", operation.OperationType))
@@ -349,16 +349,16 @@ func (program *programModular) GetEstimation(maxXOccurrences uint) uint64 {
 	var sum uint64 = 0
 
 	for i := uint(1); i <= maxXOccurrences; i++ {
-		sum += Combination_uint64(len(program.GetPointersToConstantsOffsets()), int(i)) * // x
-			Pow_uint64(uint64(len(program.possibleConstants)), len(program.GetPointersToConstantsOffsets())-int(i)) * // remained constants
-			Pow_uint64(uint64(len(program.possibleFunctions)), len(program.GetPointersToFunctionsTypes())) * // functions
-			Pow_uint64(uint64(len(program.possibleOperators)), len(program.GetPointersToOperatorsTypes())) // operators
+		sum += Internal_Combination_uint64(len(program.GetPointersToConstantsOffsets()), int(i)) * // x
+			Internal_Pow_uint64(uint64(len(program.possibleConstants)), len(program.GetPointersToConstantsOffsets())-int(i)) * // remained constants
+			Internal_Pow_uint64(uint64(len(program.possibleFunctions)), len(program.GetPointersToFunctionsTypes())) * // functions
+			Internal_Pow_uint64(uint64(len(program.possibleOperators)), len(program.GetPointersToOperatorsTypes())) // operators
 	}
 
 	return sum
 }
 
-func Fact_uint64(x int) uint64 {
+func Internal_Fact_uint64(x int) uint64 {
 	result := uint64(1)
 	for i := 1; i <= x; i++ {
 		result *= uint64(i)
@@ -366,6 +366,6 @@ func Fact_uint64(x int) uint64 {
 	return result
 }
 
-func Combination_uint64(n, k int) uint64 {
-	return Fact_uint64(n) / (Fact_uint64(k) * Fact_uint64(n-k))
+func Internal_Combination_uint64(n, k int) uint64 {
+	return Internal_Fact_uint64(n) / (Internal_Fact_uint64(k) * Internal_Fact_uint64(n-k))
 }
