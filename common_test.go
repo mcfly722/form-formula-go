@@ -32,6 +32,13 @@ func assert_int(t *testing.T, expected int, obtained int) {
 	t.Logf("obtained: %v\n", obtained)
 }
 
+func assert_bool(t *testing.T, obtained bool) {
+	if obtained != true {
+		t.Fatalf("expected True but obtained %v\n", obtained)
+	}
+	t.Logf("obtained: %v\n", obtained)
+}
+
 func assert_error(t *testing.T, err error) {
 	if err == nil {
 		t.Fatalf("error not catched!")

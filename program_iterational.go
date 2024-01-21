@@ -1,6 +1,7 @@
 package formFormula
 
 import (
+	"errors"
 	"fmt"
 	"math"
 )
@@ -16,8 +17,11 @@ type ProgramIterational interface {
 }
 
 type programIterational struct {
-	memory     []float64
-	operations []Operation
+	memory            []float64
+	operations        []Operation
+	possibleConstants []int
+	possibleFunctions []int
+	possibleOperators []int
 }
 
 func NewIterationalProgram() ProgramIterational {
@@ -31,6 +35,92 @@ func NewIterationalProgram() ProgramIterational {
 	return &programIterational{
 		memory:     memory,
 		operations: []Operation{},
+	}
+}
+
+func initializeMemoryForIterationalProgram() []float64 {
+	memory := make([]float64, len(Constants))
+	memory[ONE] = 1
+	memory[THREE] = 3
+	return memory
+}
+
+func newIterationalProgram() *programIterational {
+	return &programIterational{
+		memory:     initializeMemoryForIterationalProgram(),
+		operations: []Operation{},
+		possibleConstants: []int{
+			int(ONE),
+			int(MINUS_ONE),
+			int(THREE),
+		},
+		possibleFunctions: []int{
+			int(FCT),
+			int(INVERSE),
+		},
+		possibleOperators: []int{
+			int(SUM),
+			int(MUL),
+			int(POW),
+		},
+	}
+}
+
+func NewIterationalProgramFromBracketsString(bracketsString string) (ProgramIterational, error) {
+	if len(bracketsString) == 0 {
+		return nil, errors.New("brackets sequence is empty")
+	}
+
+	tree, err := BracketsToExpressionTree(bracketsString)
+	if err != nil {
+		return nil, err
+	}
+
+	program := newIterationalProgram()
+
+	_, err = program.loadFromExpressionTreeRecursive(tree)
+	if err != nil {
+		return nil, err
+	}
+
+	return program, nil
+}
+
+func (program *programIterational) loadFromExpressionTreeRecursive(node *Expression) (int, error) {
+	switch len(node.Arguments) {
+	case 0:
+		return int(X), nil
+	case 1:
+		argumentOffset, err := program.loadFromExpressionTreeRecursive(node.Arguments[0])
+		if err != nil {
+			return -1, err
+		}
+		operation := Operation{
+			Operand1Offset: argumentOffset,
+			OperationType:  FCT,
+		}
+		program.memory = append(program.memory, 0)
+		program.operations = append(program.operations, operation)
+		return len(program.memory) - 1, nil
+	case 2:
+		argumentOffset1, err := program.loadFromExpressionTreeRecursive(node.Arguments[0])
+		if err != nil {
+			return -1, err
+		}
+		argumentOffset2, err := program.loadFromExpressionTreeRecursive(node.Arguments[1])
+		if err != nil {
+			return -1, err
+		}
+		operation := Operation{
+			Operand1Offset: argumentOffset1,
+			Operand2Offset: argumentOffset2,
+			OperationType:  SUM,
+		}
+		program.memory = append(program.memory, 0)
+		program.operations = append(program.operations, operation)
+		return len(program.memory) - 1, nil
+	default:
+		return -1, errors.New("three arguments not supported by modular arithmetic")
 	}
 }
 
@@ -106,10 +196,14 @@ func (program *programIterational) Execute() float64 {
 		memoryResultOffset := operationNumber + resultsOffset
 
 		switch operation.OperationType {
+		case NOTHING:
+			memory[memoryResultOffset] = memory[operation.Operand1Offset]
 		case SUM:
 			memory[memoryResultOffset] = memory[operation.Operand1Offset] + memory[operation.Operand2Offset]
 		case MUL:
 			memory[memoryResultOffset] = memory[operation.Operand1Offset] * memory[operation.Operand2Offset]
+		case DIV:
+			memory[memoryResultOffset] = memory[operation.Operand1Offset] / memory[operation.Operand2Offset]
 		default:
 			panic(fmt.Sprintf("unknown operationType=%v", operation.OperationType))
 		}
