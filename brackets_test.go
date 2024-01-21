@@ -45,6 +45,18 @@ func testBracketsToExpressionTreeError(t *testing.T, testSequence string) {
 	}
 }
 
+func testGetNextBracketsSequenceError(t *testing.T, sequence string, maxChilds int) {
+	_, err := formFormula.GetNextBracketsSequence(sequence, maxChilds)
+	if err == nil {
+		t.Fatal("not catched error")
+	}
+	t.Logf("successfully catched error: %v", err)
+}
+
+func Test_BracketsToExpressionTree_FirstBracket(t *testing.T) {
+	testBracketsToExpressionTreeSuccess(t, "()")
+}
+
 func Test_BracketsToExpressionTree_IncorrectSymbolFromStart(t *testing.T) {
 	testBracketsToExpressionTreeError(t, "a(()(()))")
 }
@@ -69,6 +81,41 @@ func Test_BracketsToExpressionTree_WrongBracketsSequence(t *testing.T) {
 	testBracketsToExpressionTreeError(t, "())(")
 }
 
-func Test_BracketsToExpressionTree_FirstBracket(t *testing.T) {
-	testBracketsToExpressionTreeSuccess(t, "()")
+func Test_GetNextBracketsSequence_IncorrectSymbolFromStart(t *testing.T) {
+	testGetNextBracketsSequenceError(t, "a(()(()))", 2)
+}
+
+func Test_GetNextBracketsSequence_IncorrectSymbolAtTheEnd(t *testing.T) {
+	testGetNextBracketsSequenceError(t, "(()(()))b", 2)
+}
+
+func Test_GetNextBracketsSequence_IncorrectSymbolInTheMiddle(t *testing.T) {
+	testGetNextBracketsSequenceError(t, "(()((c)))", 2)
+}
+
+func Test_GetNextBracketsSequence_LostOpeningBracket(t *testing.T) {
+	testGetNextBracketsSequenceError(t, "())", 2)
+}
+
+func Test_GetNextBracketsSequence_LostClosingBracket(t *testing.T) {
+	testGetNextBracketsSequenceError(t, "(()", 2)
+}
+
+func Test_GetNextBracketsSequence_WrongBracketsSequence(t *testing.T) {
+	testGetNextBracketsSequenceError(t, "())(", 2)
+}
+
+func Test_GetNextBracketsSequence_ForSeveralIterations(t *testing.T) {
+	current := "()"
+
+	for i := 0; i < 100; i++ {
+		c, err := formFormula.GetNextBracketsSequence(current, 3)
+		if err != nil {
+			t.Error(err)
+		}
+		t.Logf("%3v %v -> %v", i, current, c)
+		current = c
+	}
+
+	assert_string(t, current, "(()((()())))")
 }

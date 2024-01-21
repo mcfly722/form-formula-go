@@ -135,10 +135,7 @@ func Test_NewModularProgramFromBracketsString(t *testing.T) {
 
 func Test_NewModularProgramFromBracketsString_Empty(t *testing.T) {
 	_, err := formFormula.NewModularProgramFromBracketsString(15, "")
-	if err == nil {
-		t.Fatal("error for empty bracket sequence is not catched")
-	}
-	fmt.Printf("Successfully catched error = %v\n", err)
+	assert_error(t, err)
 }
 
 func Test_NewModularProgramFromBracketsString_TwoBracketsPairs(t *testing.T) {
@@ -201,4 +198,75 @@ func Test_RecombineModularProgram_ForSingleX(t *testing.T) {
 
 	fmt.Printf("estimation: %v\n", p.GetEstimation(3))
 	assert_uint64(t, p.GetEstimation(3), counter)
+}
+
+func Test_ModularProgram_Dump(t *testing.T) {
+	p, err := formFormula.NewModularProgramFromBracketsString(15, "(()())(())")
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Logf("DUMP:\n%v", p.Dump())
+}
+
+func Test_ModularProgram_Sub_GCD(t *testing.T) {
+	p := formFormula.NewModularProgram(5)
+
+	p.NewOp(
+		formFormula.SUB,
+		p.NewOp(formFormula.GCD,
+			int(formFormula.X),
+			int(formFormula.THREE),
+		),
+		(int)(formFormula.ONE),
+	)
+
+	p.SetX(6)
+
+	assert_string(t, "((gcd(x,3))-1) mod 5", p.Disassemble())
+	assert_uint64(t, 2, p.Execute())
+}
+
+func Test_ModularProgram_UnknownOperationType(t *testing.T) {
+	p := formFormula.NewModularProgram(5)
+
+	p.NewOp(
+		666,
+		(int)(formFormula.ONE),
+		(int)(formFormula.ONE),
+	)
+
+	defer func(t *testing.T) {
+		if err := recover(); err != nil {
+			t.Logf("panic successfully catched: %v", err)
+		}
+	}(t)
+
+	p.Execute()
+
+	t.Fatal("panic not catched!")
+}
+
+func Test_ModularProgram_NewModularProgramFromBracketsString_Error(t *testing.T) {
+	_, err := formFormula.NewModularProgramFromBracketsString(10, "(()")
+	assert_error(t, err)
+}
+
+func Test_ModularProgram_ThreeArguments_Error(t *testing.T) {
+	_, err := formFormula.NewModularProgramFromBracketsString(15, "()()()")
+	assert_error(t, err)
+}
+
+func Test_ModularProgram_ThreeArguments_ForFunction_Error(t *testing.T) {
+	_, err := formFormula.NewModularProgramFromBracketsString(15, "(()()())")
+	assert_error(t, err)
+}
+
+func Test_ModularProgram_ThreeArguments_ForFirstOperand_Error(t *testing.T) {
+	_, err := formFormula.NewModularProgramFromBracketsString(15, "(()()())()")
+	assert_error(t, err)
+}
+
+func Test_ModularProgram_ThreeArguments_ForSecondOperand_Error(t *testing.T) {
+	_, err := formFormula.NewModularProgramFromBracketsString(15, "()(()()())")
+	assert_error(t, err)
 }

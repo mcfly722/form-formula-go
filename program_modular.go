@@ -77,7 +77,10 @@ func NewModularProgramFromBracketsString(byModule uint64, bracketsString string)
 
 	program := newModularProgram(byModule)
 
-	program.loadFromExpressionTreeRecursive(tree)
+	_, err = program.loadFromExpressionTreeRecursive(tree)
+	if err != nil {
+		return nil, err
+	}
 
 	return program, nil
 }

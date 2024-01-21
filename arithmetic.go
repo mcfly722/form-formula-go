@@ -53,7 +53,7 @@ var Constants = map[OffsetMEM]string{
 }
 
 var operations = map[OperationType](func(val1 string, val2 string) string){
-	NOTHING: func(val1 string, val2 string) string { return fmt.Sprintf("%v", val1) },
+	NOTHING: func(val1 string, val2 string) string { return fmt.Sprintf("nothing(%v)", val1) },
 	SUM:     func(val1 string, val2 string) string { return fmt.Sprintf("%v+%v", val1, val2) },
 	SUB:     func(val1 string, val2 string) string { return fmt.Sprintf("%v-%v", val1, val2) },
 	MUL:     func(val1 string, val2 string) string { return fmt.Sprintf("%v*%v", val1, val2) },
