@@ -7,33 +7,36 @@ Library to iterate over all possible math functions to find acceptable one (GoLa
 
 ### idea
 Every mathematical function f(x) could be represented as [Abstract Syntax Tree (AST)](https://en.wikipedia.org/wiki/Abstract_syntax_tree) where nodes of this tree could be an<br>
- - <b>operators</b> (has two input arguments): <b>*, +, -, /, mod, pow(x,p)</b>
- <br>or<br>
- - <b>functions</b> (has one input argument): <b>sqrt(x), sin(x), x!, log(x), exp(x),round(x)</b>
+ - operators (has two input arguments): <b>*, +, -, /, mod, pow(x,p)</b>
+ - functions (has one input argument): <b>sqrt(x), sin(x), x!, log(x), exp(x),round(x)</b>
 
-Leafs of this tree are:
-* constants or
-* argument x
-* iteration number
-* previous calculated value
+Leafs of this tree are:<br>
+- constants or
+- argument x
+- iteration number
+- previous calculated value
+   
+Complex formulas which contains [&#8721;](https://en.wikipedia.org/wiki/Summation),[&#8719;](https://en.wikipedia.org/wiki/Multiplication),
+[&#8970;...&#8971;](https://en.wikipedia.org/wiki/Continued_fraction),
+or other sequence operator could be represented as recursive function which accepts previous calculated value (<b>pv</b>),
+index(i) and argument(x) as input parameters.
 
-Complex formulas which contains [&#8721;](https://en.wikipedia.org/wiki/Summation),[&#8719;](https://en.wikipedia.org/wiki/Multiplication),[&#8970;...&#8971;](https://en.wikipedia.org/wiki/Continued_fraction), or other sequence operator could be represented as recursive function which accepts previous calculated value (<b>pv</b>), index(i) and argument(x) as input parameters.
-<br><br>
--
+---
 ##### <u>Example 1 - Computing exp(z) using [Euler formula](https://en.wikipedia.org/wiki/Euler%27s_formula):</u>
-![alt tag](https://wikimedia.org/api/rest_v1/media/math/render/svg/6a91595ef0946463456b2d0184bdcdb2ae9da7a2)
+![alt tag](https://wikimedia.org/api/rest_v1/media/math/render/svg/6a91595ef0946463456b2d0184bdcdb2ae9da7a2)<br>
 
 recursive function would be:<br><br> f(z) = z^n / n! + pv0<br>
 n=...,6,5,4,3,2,1,0<br><b>pv0</b> means what first value would be equal to 0
-<br><br>
--
+
+---
 ##### <u>Example 2 - Computing Pi using [Wallis product](https://en.wikipedia.org/wiki/Wallis_product):</u>
-![alt tag](https://wikimedia.org/api/rest_v1/media/math/render/svg/df59bf8aa67b6dff8be6cffb4f59777cea828454)<br>
+![alt tag](https://wikimedia.org/api/rest_v1/media/math/render/svg/df59bf8aa67b6dff8be6cffb4f59777cea828454)<br><br>
+
 recursive function would be:<br><br> f() = pv1 * (2*n)^2 / ((2*n-1)*(2*n+1)) <br>
 n=...,6,5,4,3,2,1,0<br>
 last product could not be equal to 0, otherwise all final product will be equal 0 too, so here we using pv1 instead pv0, <b>pv1</b> means what first value would be equal to 1
-<br><br>
--
+
+---
 ##### <u>Example 3 - Computing square root using [Geron iteration formula](https://ru.wikipedia.org/wiki/%D0%98%D1%82%D0%B5%D1%80%D0%B0%D1%86%D0%B8%D0%BE%D0%BD%D0%BD%D0%B0%D1%8F_%D1%84%D0%BE%D1%80%D0%BC%D1%83%D0%BB%D0%B0_%D0%93%D0%B5%D1%80%D0%BE%D0%BD%D0%B0):</u>
  ![alt tag](https://wikimedia.org/api/rest_v1/media/math/render/svg/9935d6f7061161b29325d712518fb58496f58bfb)<br>
  ![alt tag](https://wikimedia.org/api/rest_v1/media/math/render/svg/cd0d9bc3389f73d8501bfef1303b06246d81f771)<br>
@@ -42,8 +45,8 @@ last product could not be equal to 0, otherwise all final product will be equal 
 recursive function would be:<br><br> f(x) = (PVx + A/PVx) / 2<br>
 n=...,6,5,4,3,2,1,0<br>
 A - could be your special constant
-<br><br>
--
+
+---
 ### search principle
 There are several steps to make this search:
 #### 1. Iterate over all formula forms (this step is clusterable, you can calculate all further steps on different computers)</summary>
