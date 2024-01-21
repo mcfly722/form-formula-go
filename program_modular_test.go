@@ -171,18 +171,6 @@ func Test_NewModularProgramFromBracketsString_OneBracketsPair2(t *testing.T) {
 	assert_string(t, "((x!)!) mod 15", p.Disassemble())
 }
 
-func Test_Pow_uint64(t *testing.T) {
-	assert_uint64(t, 1594323, formFormula.Internal_Pow_uint64(3, 13))
-}
-
-func Test_Fact_uint64(t *testing.T) {
-	assert_uint64(t, 1307674368000, formFormula.Internal_Fact_uint64(15))
-}
-
-func Test_Combination_uint64(t *testing.T) {
-	assert_uint64(t, 10, formFormula.Internal_Combination_uint64(5, 3))
-}
-
 func Test_RecombineModularProgram_ForSingleX(t *testing.T) {
 
 	p, err := formFormula.NewModularProgramFromBracketsString(15, "(()())(())")

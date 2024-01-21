@@ -268,22 +268,6 @@ func Internal_GCD_uint64(a uint64, b uint64) uint64 {
 	return a
 }
 
-func Internal_Pow_uint64(n uint64, m int) uint64 {
-	if m == 0 {
-		return 1
-	}
-
-	if m == 1 {
-		return n
-	}
-
-	result := n
-	for i := 2; i <= m; i++ {
-		result *= n
-	}
-	return result
-}
-
 func (program *programModular) Execute() uint64 {
 
 	memory := program.memory
@@ -343,26 +327,13 @@ func (program *programModular) Recombine(xValues []uint64, maxXOccurrences uint,
 }
 
 func (program *programModular) GetEstimation(maxXOccurrences uint) uint64 {
-	var sum uint64 = 0
-
-	for i := uint(1); i <= maxXOccurrences; i++ {
-		sum += Internal_Combination_uint64(len(program.getPointersToConstantsOffsets()), int(i)) * // x
-			Internal_Pow_uint64(uint64(len(program.possibleConstants)), len(program.getPointersToConstantsOffsets())-int(i)) * // remained constants
-			Internal_Pow_uint64(uint64(len(program.possibleFunctions)), len(program.getPointersToFunctionsTypes())) * // functions
-			Internal_Pow_uint64(uint64(len(program.possibleOperators)), len(program.getPointersToOperatorsTypes())) // operators
-	}
-
-	return sum
-}
-
-func Internal_Fact_uint64(x int) uint64 {
-	result := uint64(1)
-	for i := 1; i <= x; i++ {
-		result *= uint64(i)
-	}
-	return result
-}
-
-func Internal_Combination_uint64(n, k int) uint64 {
-	return Internal_Fact_uint64(n) / (Internal_Fact_uint64(k) * Internal_Fact_uint64(n-k))
+	return Internal_GetEstimation(
+		maxXOccurrences,
+		uint(len(program.possibleConstants)),
+		uint(len(program.possibleFunctions)),
+		uint(len(program.possibleOperators)),
+		uint(len(program.getPointersToConstantsOffsets())),
+		uint(len(program.getPointersToFunctionsTypes())),
+		uint(len(program.getPointersToOperatorsTypes())),
+	)
 }
