@@ -8,20 +8,21 @@ import (
 
 type ProgramIterational interface {
 	SetX(x float64)
-	NewFunc(operationType OperationType, operand1Offset int) int
-	NewOp(operationType OperationType, operand1Offset int, operand2Offset int) int
+	NewFunc(operationType OperationType, operand1Offset uint) uint
+	NewOp(operationType OperationType, operand1Offset uint, operand2Offset uint) uint
 	Disassemble() string
 	Dump() string
-	Execute() float64
-	ExecuteWithIterations(n int, x float64) float64
+	ExecuteWithIterations(iterations uint, x float64) float64
+	Recombine(xValues []float64, maxXOccurrences uint, ready func())
+	GetEstimation(maxXOccurrences uint) uint64
 }
 
 type programIterational struct {
 	memory            []float64
 	operations        []Operation
-	possibleConstants []int
-	possibleFunctions []int
-	possibleOperators []int
+	possibleConstants []uint
+	possibleFunctions []uint
+	possibleOperators []uint
 }
 
 func NewIterationalProgram() ProgramIterational {
@@ -49,19 +50,19 @@ func newIterationalProgram() *programIterational {
 	return &programIterational{
 		memory:     initializeMemoryForIterationalProgram(),
 		operations: []Operation{},
-		possibleConstants: []int{
-			int(ONE),
-			int(MINUS_ONE),
-			int(THREE),
+		possibleConstants: []uint{
+			uint(ONE),
+			uint(MINUS_ONE),
+			uint(THREE),
 		},
-		possibleFunctions: []int{
-			int(FCT),
-			int(INVERSE),
+		possibleFunctions: []uint{
+			uint(FCT),
+			uint(SQRT),
 		},
-		possibleOperators: []int{
-			int(SUM),
-			int(MUL),
-			int(POW),
+		possibleOperators: []uint{
+			uint(SUM),
+			uint(MUL),
+			uint(POW),
 		},
 	}
 }
@@ -86,14 +87,14 @@ func NewIterationalProgramFromBracketsString(bracketsString string) (ProgramIter
 	return program, nil
 }
 
-func (program *programIterational) loadFromExpressionTreeRecursive(node *Expression) (int, error) {
+func (program *programIterational) loadFromExpressionTreeRecursive(node *Expression) (uint, error) {
 	switch len(node.Arguments) {
 	case 0:
-		return int(X), nil
+		return uint(X), nil
 	case 1:
 		argumentOffset, err := program.loadFromExpressionTreeRecursive(node.Arguments[0])
 		if err != nil {
-			return -1, err
+			return defaultErrorUIntValue, err
 		}
 		operation := Operation{
 			Operand1Offset: argumentOffset,
@@ -101,15 +102,15 @@ func (program *programIterational) loadFromExpressionTreeRecursive(node *Express
 		}
 		program.memory = append(program.memory, 0)
 		program.operations = append(program.operations, operation)
-		return len(program.memory) - 1, nil
+		return uint(len(program.memory) - 1), nil
 	case 2:
 		argumentOffset1, err := program.loadFromExpressionTreeRecursive(node.Arguments[0])
 		if err != nil {
-			return -1, err
+			return defaultErrorUIntValue, err
 		}
 		argumentOffset2, err := program.loadFromExpressionTreeRecursive(node.Arguments[1])
 		if err != nil {
-			return -1, err
+			return defaultErrorUIntValue, err
 		}
 		operation := Operation{
 			Operand1Offset: argumentOffset1,
@@ -118,9 +119,9 @@ func (program *programIterational) loadFromExpressionTreeRecursive(node *Express
 		}
 		program.memory = append(program.memory, 0)
 		program.operations = append(program.operations, operation)
-		return len(program.memory) - 1, nil
+		return uint(len(program.memory) - 1), nil
 	default:
-		return -1, errors.New("three arguments not supported by modular arithmetic")
+		return defaultErrorUIntValue, errors.New("three arguments not supported by modular arithmetic")
 	}
 }
 
@@ -128,10 +129,10 @@ func (program *programIterational) SetX(x float64) {
 	program.memory[X] = x
 }
 
-func (program *programIterational) NewFunc(operationType OperationType, operand1Offset int) int {
+func (program *programIterational) NewFunc(operationType OperationType, operand1Offset uint) uint {
 
 	program.memory = append(program.memory, 666)
-	resultAddr := len(program.memory) - 1
+	resultAddr := uint(len(program.memory) - 1)
 
 	newOp := Operation{
 		Operand1Offset: operand1Offset,
@@ -143,7 +144,7 @@ func (program *programIterational) NewFunc(operationType OperationType, operand1
 	return resultAddr
 }
 
-func (program *programIterational) NewOp(operationType OperationType, operand1Offset int, operand2Offset int) int {
+func (program *programIterational) NewOp(operationType OperationType, operand1Offset uint, operand2Offset uint) uint {
 	program.memory = append(program.memory, 666)
 
 	newOp := Operation{
@@ -152,25 +153,25 @@ func (program *programIterational) NewOp(operationType OperationType, operand1Of
 		OperationType:  operationType,
 	}
 	program.operations = append(program.operations, newOp)
-	return len(program.memory) - 1
+	return uint(len(program.memory) - 1)
 }
 
 func (program *programIterational) toString(operation *Operation) string {
 	val1 := ""
 	val2 := ""
 
-	if operation.Operand1Offset < len(Constants) {
+	if operation.Operand1Offset < uint(len(Constants)) {
 		val1 = Constants[(OffsetMEM)(operation.Operand1Offset)]
 	} else {
-		op := program.operations[operation.Operand1Offset-len(Constants)]
+		op := program.operations[int(operation.Operand1Offset)-len(Constants)]
 		val1 += fmt.Sprintf("(%v)", program.toString(&op))
 	}
 
 	if operation.Operand2Offset != 0 {
-		if operation.Operand2Offset < len(Constants) {
+		if operation.Operand2Offset < uint(len(Constants)) {
 			val2 = Constants[(OffsetMEM)(operation.Operand2Offset)]
 		} else {
-			op := program.operations[operation.Operand2Offset-len(Constants)]
+			op := program.operations[int(operation.Operand2Offset)-len(Constants)]
 			val2 = fmt.Sprintf("(%v)", program.toString(&op))
 		}
 	}
@@ -187,7 +188,7 @@ func (program *programIterational) Dump() string {
 	return fmt.Sprintf("memory:%v\nprogram:%v", program.memory, program.operations)
 }
 
-func (program *programIterational) Execute() float64 {
+func (program *programIterational) execute() float64 {
 
 	memory := program.memory
 	resultsOffset := len(Constants)
@@ -212,7 +213,7 @@ func (program *programIterational) Execute() float64 {
 	return program.memory[len(program.memory)-1]
 }
 
-func (program *programIterational) ExecuteWithIterations(n int, x float64) float64 {
+func (program *programIterational) ExecuteWithIterations(iterations uint, x float64) float64 {
 
 	program.memory[PV0] = 0
 	program.memory[PV1] = 1
@@ -221,9 +222,9 @@ func (program *programIterational) ExecuteWithIterations(n int, x float64) float
 
 	resultAddr := len(program.memory) - 1
 
-	for i := 1; i <= n; i++ {
+	for i := uint(1); i <= iterations; i++ {
 		program.memory[I] = float64(i)
-		result := program.Execute()
+		result := program.execute()
 
 		if math.IsNaN(result) || math.IsInf(result, 1) || math.IsInf(result, -1) {
 			break
@@ -235,4 +236,82 @@ func (program *programIterational) ExecuteWithIterations(n int, x float64) float
 	}
 
 	return program.memory[resultAddr]
+}
+
+func (program *programIterational) getPointersToFunctionsTypes() []*uint {
+	result := []*uint{}
+	l := len(program.operations)
+	for i := 0; i < l; i++ {
+		if program.operations[i].Operand2Offset == 0 {
+			result = append(result, (*uint)(&program.operations[i].OperationType))
+		}
+	}
+	return result
+}
+
+func (program *programIterational) getPointersToOperatorsTypes() []*uint {
+	result := []*uint{}
+	l := len(program.operations)
+	for i := 0; i < l; i++ {
+		if program.operations[i].Operand2Offset != 0 {
+			result = append(result, (*uint)(&program.operations[i].OperationType))
+		}
+	}
+	return result
+}
+
+func (program *programIterational) getPointersToConstantsOffsets() []*uint {
+	constantsRange := uint(len(Constants))
+	result := []*uint{}
+
+	l := len(program.operations)
+
+	for i := 0; i < l; i++ {
+		if program.operations[i].Operand1Offset < constantsRange {
+			//fmt.Printf("OP1:%v [%v]\n", Constants[(OffsetMEM)(program.operations[i].Operand1Offset)], &(program.operations[i].Operand2Offset))
+			result = append(result, &(program.operations[i].Operand1Offset))
+		}
+
+		if program.operations[i].Operand2Offset != 0 && program.operations[i].Operand2Offset < constantsRange {
+			//fmt.Printf("OP2:%v [%v]\n", Constants[(OffsetMEM)(program.operations[i].Operand2Offset)], &(program.operations[i].Operand2Offset))
+			result = append(result, &(program.operations[i].Operand2Offset))
+		}
+	}
+	return result
+}
+
+func (program *programIterational) Recombine(xValues []float64, maxXOccurrences uint, ready func()) {
+	constants := program.getPointersToConstantsOffsets()
+	functions := program.getPointersToFunctionsTypes()
+	operations := program.getPointersToOperatorsTypes()
+
+	for _, x := range xValues {
+		program.SetX(x)
+
+		ready_X_Constants_Functions := func() {
+			RecombineValues(&operations, &program.possibleOperators, ready)
+		}
+
+		ready_X_Constants := func() {
+			RecombineValues(&functions, &program.possibleFunctions, ready_X_Constants_Functions)
+		}
+
+		readyX := func(remainedConstants *[]*uint) {
+			RecombineValues(remainedConstants, &program.possibleConstants, ready_X_Constants)
+		}
+
+		RecombineRequiredX(&constants, maxXOccurrences, uint(X), readyX)
+	}
+}
+
+func (program *programIterational) GetEstimation(maxXOccurrences uint) uint64 {
+	return Internal_GetEstimation(
+		maxXOccurrences,
+		uint(len(program.possibleConstants)),
+		uint(len(program.possibleFunctions)),
+		uint(len(program.possibleOperators)),
+		uint(len(program.getPointersToConstantsOffsets())),
+		uint(len(program.getPointersToFunctionsTypes())),
+		uint(len(program.getPointersToOperatorsTypes())),
+	)
 }

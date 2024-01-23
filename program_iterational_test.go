@@ -1,6 +1,7 @@
 package formFormula_test
 
 import (
+	"fmt"
 	"math"
 	"testing"
 
@@ -13,36 +14,34 @@ func Test_ProgramIterational_Disassemble(t *testing.T) {
 
 	p.NewOp(
 		formFormula.SUM,
-		p.NewFunc(formFormula.FCT, (int)(formFormula.I)),
+		p.NewFunc(formFormula.FCT, uint(formFormula.I)),
 		p.NewOp(formFormula.MUL,
-			int(formFormula.X),
-			p.NewFunc(formFormula.FCT, (int)(formFormula.E)),
+			uint(formFormula.X),
+			p.NewFunc(formFormula.FCT, uint(formFormula.E)),
 		),
 	)
 
 	assert_string(t, "(i!)+(x*(e!))", p.Disassemble())
 }
 
-func Test_ProgramIterational_Execute(t *testing.T) {
+func Test_ProgramIterational_ExecuteWithIterations(t *testing.T) {
 	p := formFormula.NewIterationalProgram()
-
-	p.SetX(2)
 
 	p.NewOp(
 		formFormula.MUL,
-		int(formFormula.E),
+		uint(formFormula.E),
 		p.NewOp(formFormula.SUM,
-			int(formFormula.X),
-			int(formFormula.PI),
+			uint(formFormula.X),
+			uint(formFormula.PI),
 		),
 	)
 
-	assert_float64(t, math.E*(2+math.Pi), p.Execute())
+	assert_float64(t, math.E*(2+math.Pi), p.ExecuteWithIterations(1, 2))
 }
 
-func Test_ProgramIterational_Execute_Empty(t *testing.T) {
+func Test_ProgramIterational_ExecuteWithIterations_Empty(t *testing.T) {
 	p := formFormula.NewIterationalProgram()
-	p.Execute()
+	p.ExecuteWithIterations(1, 2)
 }
 
 func Test_ProgramIterational_ExecuteWithIterations_I(t *testing.T) {
@@ -50,8 +49,8 @@ func Test_ProgramIterational_ExecuteWithIterations_I(t *testing.T) {
 
 	p.NewOp(
 		formFormula.SUM,
-		int(formFormula.PVX),
-		int(formFormula.I),
+		uint(formFormula.PVX),
+		uint(formFormula.I),
 	)
 
 	// 3+1=4
@@ -66,8 +65,8 @@ func Test_ProgramIterational_ExecuteWithIterations_PVX(t *testing.T) {
 
 	p.NewOp(
 		formFormula.SUM,
-		int(formFormula.PVX),
-		int(formFormula.MINUS_ONE),
+		uint(formFormula.PVX),
+		uint(formFormula.MINUS_ONE),
 	)
 
 	// 10-1=9
@@ -83,8 +82,8 @@ func Test_ProgramIterational_ExecuteWithIterations_PV0(t *testing.T) {
 
 	p.NewOp(
 		formFormula.SUM,
-		int(formFormula.PV0),
-		int(formFormula.X),
+		uint(formFormula.PV0),
+		uint(formFormula.X),
 	)
 
 	//  0-2=-2
@@ -99,8 +98,8 @@ func Test_IterationalProgram_UnknownOperationType(t *testing.T) {
 
 	p.NewOp(
 		666,
-		(int)(formFormula.ONE),
-		(int)(formFormula.ONE),
+		uint(formFormula.ONE),
+		uint(formFormula.ONE),
 	)
 
 	defer func(t *testing.T) {
@@ -109,7 +108,7 @@ func Test_IterationalProgram_UnknownOperationType(t *testing.T) {
 		}
 	}(t)
 
-	p.Execute()
+	p.ExecuteWithIterations(1, 1)
 
 	t.Fatal("panic not catched!")
 }
@@ -157,8 +156,8 @@ func Test_ProgramIterational_Infinity(t *testing.T) {
 
 	p.NewOp(
 		formFormula.DIV,
-		int(formFormula.ONE),
-		int(formFormula.X),
+		uint(formFormula.ONE),
+		uint(formFormula.X),
 	)
 
 	assert_string(t, "1/x", p.Disassemble())
@@ -172,10 +171,31 @@ func Test_ProgramIterational_Nothing(t *testing.T) {
 
 	p.NewFunc(
 		formFormula.NOTHING,
-		int(formFormula.X),
+		uint(formFormula.X),
 	)
 
 	assert_string(t, "nothing(x)", p.Disassemble())
 
 	assert_float64(t, 1234567, p.ExecuteWithIterations(1, 1234567))
+}
+
+func Test_RecombineIterationalProgram_ForSingleX(t *testing.T) {
+
+	p, err := formFormula.NewIterationalProgramFromBracketsString("(()())(())")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var counter uint64 = 0
+
+	ready := func() {
+		counter++
+		fmt.Printf("%5v %v\n", counter, p.Disassemble())
+	}
+
+	possibleXValues := []float64{0}
+
+	p.Recombine(possibleXValues, 3, ready)
+
+	assert_uint64(t, p.GetEstimation(3), counter)
 }
