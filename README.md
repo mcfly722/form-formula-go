@@ -147,9 +147,9 @@ RecombineValues(input *[]*uint, possibleValues *[]uint, ready func())
 #### 4. Iterate over all possible functions (where number of child arguments = 1)
 Used the same principle as in step 3, but applied for functions.
 #### 5. Iterate over all possible operators (where number of child arguments = 2)
-Used the same principle as in step 3, but applied for functions.<br>
+Used the same principle as in step 3, but applied for operations.<br>
 #### 6. Apply formula to itself several times
-Finally, after all it included loops opens, you get some function form<br>
+Finally, after all it included loops opens, you get some function-form<br>
 F.e:<br>
 ```
 === RUN   Test_RecombineModularProgram_ForSingleX
