@@ -1,6 +1,6 @@
 # Form-Formula-Go
-![Version: version](https://img.shields.io/badge/version-v0.0.1--alpha-success.svg)
-![Tests: tests 100% coverage](https://img.shields.io/badge/tests-67_of_67=100%-success.svg)
+![](https://img.shields.io/badge/version-v0.0.1--alpha-success.svg)
+![](https://img.shields.io/badge/tests-69_of_69=100%-success.svg)
 [![License: GPL3.0](https://img.shields.io/badge/License-GPL3.0-blue.svg)](https://www.gnu.org/licenses/gpl-3.0.html)
 
 Library to iterate over all possible math functions to find acceptable one (GoLang implementation).<br>
