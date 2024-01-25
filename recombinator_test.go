@@ -100,6 +100,22 @@ func Test_Recombine(t *testing.T) {
 	assert_int(t, 3*3*3*3*3, counter)
 }
 
+func Test_Recombine_3x3(t *testing.T) {
+	input := [3]uint{}
+	inputRefs := []*uint{&input[0], &input[1], &input[2]}
+
+	counter := 0
+
+	ready := func() {
+		counter++
+		fmt.Printf("%3v %v\n", counter, input)
+	}
+
+	formFormula.RecombineValues(&inputRefs, &[]uint{1, 2, 3}, ready)
+
+	assert_int(t, 3*3*3, counter)
+}
+
 func Test_Recombine_EmptyInput(t *testing.T) {
 	input := []uint{}
 	inputRefs := []*uint{}
