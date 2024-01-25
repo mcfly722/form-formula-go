@@ -18,7 +18,7 @@ Leafs of this tree are:<br>
    
 Complex formulas which contains [&#8721;](https://en.wikipedia.org/wiki/Summation),[&#8719;](https://en.wikipedia.org/wiki/Multiplication),
 [&#8970;...&#8971;](https://en.wikipedia.org/wiki/Continued_fraction),
-or other sequence operator could be represented as recursive function which accepts previous calculated value (<b>pv</b>),
+or other sequence operator could be represented as a recursive function which accepts previous calculated value (<b>pv</b>),
 index(i) and argument(x) as input parameters.
 
 ---
@@ -50,10 +50,6 @@ A - could be your special constant
 ### search principle
 There are several steps to make this search:
 #### 1. Iterate over all formula forms (this step is clusterable, you can calculate all further steps on different computers)</summary>
- 
-
-#### 2. Iterate over all X combinations in constants in leafs (maximum number of X occurrences limit are configurable) and Previous Values (PV's)
-
 ```
 nextChild,err := formFormula.GetNextBracketsSequence(currentChild, maxChilds uint)
 ```
@@ -71,14 +67,126 @@ Function generates new sequence based on [Catalan method](https://en.wikipedia.o
 | ((()))       | ()()()()    | 4                |
 | ()()()()     | ()()(())    | 3                |
 
+#### 2. Iterate over all combinations for X in leafs constants (maximum number of X occurrences limit are configurable) and Previous Values (PV's)
+You cannot use formula without X argument, so it is required at least several leafs filled with it.
+To recombine all possible values, used lexicographic method<br>(see Donald Knuth: The Art of computer Programming Volume 4 Fascicle 3A - Generation All Combinations (7.2.1.3 Generating all combinations on page 17))
+```
+formFormula.RecombineRequiredX(input *[]*uint, maxOccurrences uint, setXValue uint, ready func(remained *[]*uint))
+```
+Example for one, two and three X arguments:
+```
+=== RUN   Test_RecombineRequiredX_3of5
+ 
+for one X:
+ 1 [1 0 0 0 0]
+ 2 [0 1 0 0 0]
+ 3 [0 0 1 0 0]
+ 4 [0 0 0 1 0]
+ 5 [0 0 0 0 1]
+
+for two X:
+ 6 [1 1 0 0 0]
+ 7 [1 0 1 0 0]
+ 8 [1 0 0 1 0]
+ 9 [1 0 0 0 1]
+10 [0 1 1 0 0]
+11 [0 1 0 1 0]
+12 [0 1 0 0 1]
+13 [0 0 1 1 0]
+14 [0 0 1 0 1]
+15 [0 0 0 1 1]
+
+for three X:
+16 [1 1 1 0 0]
+17 [1 1 0 1 0]
+18 [1 1 0 0 1]
+19 [1 0 1 1 0]
+20 [1 0 1 0 1]
+21 [1 0 0 1 1]
+22 [0 1 1 1 0]
+23 [0 1 1 0 1]
+24 [0 1 0 1 1]
+25 [0 0 1 1 1]
+```
 
 #### 3. Iterate over all possible constant values in free places (where X is not appearing)
+For this steps used recombination through simple recursion.
+```
+RecombineValues(input *[]*uint, possibleValues *[]uint, ready func())
+```
+```
+=== RUN   Test_Recombine_3x3
+  1 [1 1 1]
+  2 [2 1 1]
+  3 [3 1 1]
+  4 [1 2 1]
+  5 [2 2 1]
+  6 [3 2 1]
+  7 [1 3 1]
+  8 [2 3 1]
+  9 [3 3 1]
+ 10 [1 1 2]
+ 11 [2 1 2]
+ 12 [3 1 2]
+ 13 [1 2 2]
+ 14 [2 2 2]
+ 15 [3 2 2]
+ 16 [1 3 2]
+ 17 [2 3 2]
+ 18 [3 3 2]
+ 19 [1 1 3]
+ 20 [2 1 3]
+ 21 [3 1 3]
+ 22 [1 2 3]
+ 23 [2 2 3]
+ 24 [3 2 3]
+ 25 [1 3 3]
+ 26 [2 3 3]
+ 27 [3 3 3]
+```
 #### 4. Iterate over all possible functions (where number of child arguments = 1)
+Used the same principle as in step 3, but applied for functions.
 #### 5. Iterate over all possible operators (where number of child arguments = 2)
+Used the same principle as in step 3, but applied for functions.<br>
 #### 6. Apply formula to itself several times
-
-Finally, after all it included loops opens, you get some function form and could calculate your sample points.<br>
-Based on this calculation you can estimate how close this function to your original pattern.<br>
+Finally, after all it included loops opens, you get some function form<br>
+F.e:<br>
+```
+=== RUN   Test_RecombineModularProgram_ForSingleX
+    1 ((x+1)+(1!)) mod 15
+    2 ((x*1)+(1!)) mod 15
+    3 ((x^1)+(1!)) mod 15
+    4 ((gcd(x,1))+(1!)) mod 15
+    5 ((x+1)*(1!)) mod 15
+    6 ((x*1)*(1!)) mod 15
+    7 ((x^1)*(1!)) mod 15
+    8 ((gcd(x,1))*(1!)) mod 15
+    9 ((x+1)^(1!)) mod 15
+   10 ((x*1)^(1!)) mod 15
+   11 ((x^1)^(1!)) mod 15
+   12 ((gcd(x,1))^(1!)) mod 15
+   13 (gcd((x+1),(1!))) mod 15
+   14 (gcd((x*1),(1!))) mod 15
+   15 (gcd((x^1),(1!))) mod 15
+   16 (gcd((gcd(x,1)),(1!))) mod 15
+   17 ((x+1)+(inverse(1))) mod 15
+   18 ((x*1)+(inverse(1))) mod 15
+   19 ((x^1)+(inverse(1))) mod 15
+   20 ((gcd(x,1))+(inverse(1))) mod 15
+   21 ((x+1)*(inverse(1))) mod 15
+   22 ((x*1)*(inverse(1))) mod 15
+   23 ((x^1)*(inverse(1))) mod 15
+   24 ((gcd(x,1))*(inverse(1))) mod 15
+   25 ((x+1)^(inverse(1))) mod 15
+   26 ((x*1)^(inverse(1))) mod 15
+   27 ((x^1)^(inverse(1))) mod 15
+   28 ((gcd(x,1))^(inverse(1))) mod 15
+   29 (gcd((x+1),(inverse(1)))) mod 15
+   30 (gcd((x*1),(inverse(1)))) mod 15
+   31 (gcd((x^1),(inverse(1)))) mod 15
+   ... and so on...
+```
+You can apply this function-form several times or just once, and based on this calculation estimate how close this function to your original pattern.<br>
 
 ### API
 Next arithmetics are supported:
