@@ -12,6 +12,13 @@ func setLadder(input *[]*uint) {
 		*(*input)[i] = i + 1
 	}
 }
+
+func setValue(input *[]*uint, value uint) {
+	for i := uint(0); i < uint(len(*input)); i++ {
+		*(*input)[i] = value
+	}
+}
+
 func Test_SetLadder(t *testing.T) {
 	input := [5]uint{}
 	inputRefs := []*uint{&input[0], &input[1], &input[2], &input[3], &input[4]}
@@ -41,6 +48,23 @@ func Test_RecombineRequiredX(t *testing.T) {
 	formFormula.RecombineRequiredX(&inputRefs, 5, 0, next)
 
 	assert_int(t, 31, counter)
+}
+
+func Test_RecombineRequiredX_3of5(t *testing.T) {
+	input := [5]uint{}
+	inputRefs := []*uint{&input[0], &input[1], &input[2], &input[3], &input[4]}
+
+	counter := 0
+
+	next := func(remaining *[]*uint) {
+		counter++
+		setValue(remaining, 0)
+		fmt.Printf("%2v %v\n", counter, input)
+	}
+
+	formFormula.RecombineRequiredX(&inputRefs, 3, 1, next)
+
+	assert_int(t, 25, counter)
 }
 
 func Test_RecombineRequiredX_EmptyInput(t *testing.T) {
