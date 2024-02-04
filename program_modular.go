@@ -54,7 +54,7 @@ func newModularProgram(byModule uint64) *programModular {
 			uint(SUM),
 			uint(MUL),
 			uint(POW),
-			uint(GCD),
+			//uint(GCD),
 		},
 	}
 }
