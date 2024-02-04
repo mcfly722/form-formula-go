@@ -1,7 +1,9 @@
 package formFormula
 
 import (
+	"fmt"
 	"sync"
+	"time"
 )
 
 type WorkersPool interface {
@@ -16,12 +18,20 @@ type Scheduler interface {
 type Job interface {
 	GetIndex() uint64
 	ToString() string
+	Done()
+	IsDone() bool
+	IncrementCycle()
+	Stat() string
 }
 
 type job struct {
 	index         uint64
 	serialization string
 	done          bool
+
+	startTime  time.Time
+	finishTime time.Time
+	cycles     uint64
 }
 
 type scheduler struct {
@@ -30,13 +40,44 @@ type scheduler struct {
 	headJobSerialization string
 	head                 uint64
 	tail                 uint64
-	buffer               []*job
+	buffer               []Job
 	jobConstructor       func(currentJob string) string
 	configSaver          func(lastJob Job)
 }
 
+func NewJob(index uint64, serialization string) Job {
+	return &job{
+		index:         index,
+		serialization: serialization,
+		startTime:     time.Now(),
+		finishTime:    time.Now(),
+		cycles:        0,
+	}
+}
+
+func (job *job) Done() {
+	job.finishTime = time.Now()
+	job.done = true
+}
+
+func (job *job) IsDone() bool {
+	return job.done
+}
+
+func (job *job) IncrementCycle() {
+	job.cycles++
+}
+
 func (job *job) ToString() string {
 	return job.serialization
+}
+
+func (job *job) Stat() string {
+	mils := job.finishTime.Sub(job.startTime).Milliseconds()
+	if mils == 0 {
+		mils = 1
+	}
+	return fmt.Sprintf("elapsed(ms):%10v [%10v cycles] - %4v cycle/ms", mils, job.cycles, job.cycles/uint64(mils))
 }
 
 func (job *job) GetIndex() uint64 {
@@ -60,7 +101,7 @@ func newScheduler(lastFinishedJobIndex uint64, lastFinishedJob string, doneJobsB
 		tail:                 lastFinishedJobIndex + 1,
 		headJobSerialization: lastFinishedJob,
 		jobConstructor:       jobConstructor,
-		buffer:               make([]*job, doneJobsBufferSize),
+		buffer:               make([]Job, doneJobsBufferSize),
 		configSaver:          configSaver,
 	}
 
@@ -69,7 +110,7 @@ func newScheduler(lastFinishedJobIndex uint64, lastFinishedJob string, doneJobsB
 			select {
 			case finishedJobIndex := <-scheduler.finishedJobsPipe:
 				jobAddr := finishedJobIndex % uint64(len(scheduler.buffer))
-				scheduler.buffer[jobAddr].done = true
+				scheduler.buffer[jobAddr].Done()
 			default:
 				{
 					// clear closed jobs from buffer
@@ -77,7 +118,7 @@ func newScheduler(lastFinishedJobIndex uint64, lastFinishedJob string, doneJobsB
 						tailAddr := scheduler.tail % uint64(len(scheduler.buffer))
 						job := scheduler.buffer[tailAddr]
 						if job != nil {
-							if job.done {
+							if job.IsDone() {
 								scheduler.configSaver(job)
 								scheduler.buffer[tailAddr] = nil
 								scheduler.tail++
@@ -91,10 +132,7 @@ func newScheduler(lastFinishedJobIndex uint64, lastFinishedJob string, doneJobsB
 						if scheduler.buffer[headAddr] == nil {
 
 							scheduler.headJobSerialization = jobConstructor(scheduler.headJobSerialization)
-							newJob := &job{
-								index:         scheduler.head,
-								serialization: scheduler.headJobSerialization,
-							}
+							newJob := NewJob(scheduler.head, scheduler.headJobSerialization)
 							scheduler.buffer[headAddr] = newJob
 							scheduler.head++
 							scheduler.startedJobsPipe <- newJob

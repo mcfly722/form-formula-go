@@ -13,7 +13,7 @@ type ProgramIterational interface {
 	Disassemble() string
 	Dump() string
 	ExecuteWithIterations(iterations uint, x float64) float64
-	Recombine(xValues []float64, maxXOccurrences uint, ready func())
+	Recombine(maxXOccurrences uint, ready func())
 	GetEstimation(maxXOccurrences uint) uint64
 }
 
@@ -280,33 +280,29 @@ func (program *programIterational) getPointersToConstantsOffsets() []*uint {
 	return result
 }
 
-func (program *programIterational) Recombine(xValues []float64, maxXOccurrences uint, ready func()) {
+func (program *programIterational) Recombine(maxXOccurrences uint, ready func()) {
 	constants := program.getPointersToConstantsOffsets()
 	functions := program.getPointersToFunctionsTypes()
 	operations := program.getPointersToOperatorsTypes()
 
-	for _, x := range xValues {
-		program.SetX(x)
-
-		ready_X_Constants_Functions := func() {
-			RecombineValues(&operations, &program.possibleOperators, ready)
-		}
-
-		ready_X_Constants := func() {
-			RecombineValues(&functions, &program.possibleFunctions, ready_X_Constants_Functions)
-		}
-
-		readyX := func(remainedConstants *[]*uint) {
-			RecombineValues(remainedConstants, &program.possibleConstants, ready_X_Constants)
-		}
-
-		RecombineRequiredX(&constants, maxXOccurrences, uint(X), readyX)
+	ready_X_Constants_Functions := func() {
+		RecombineValues(&operations, &program.possibleOperators, ready)
 	}
+
+	ready_X_Constants := func() {
+		RecombineValues(&functions, &program.possibleFunctions, ready_X_Constants_Functions)
+	}
+
+	readyX := func(remainedConstants *[]*uint) {
+		RecombineValues(remainedConstants, &program.possibleConstants, ready_X_Constants)
+	}
+
+	RecombineRequiredX(&constants, maxXOccurrences, uint(X), readyX)
 }
 
 func (program *programIterational) GetEstimation(maxXOccurrences uint) uint64 {
 	return Internal_GetEstimation(
-		maxXOccurrences,
+		uint(min(uint64(maxXOccurrences), uint64(len(program.getPointersToConstantsOffsets())))),
 		uint(len(program.possibleConstants)),
 		uint(len(program.possibleFunctions)),
 		uint(len(program.possibleOperators)),

@@ -14,7 +14,7 @@ type ProgramModular interface {
 	Disassemble() string
 	Dump() string
 	Execute() uint64
-	Recombine(x []uint64, maxXOccurrences uint, ready func())
+	Recombine(maxXOccurrences uint, ready func())
 	GetEstimation(maxXOccurrences uint) uint64
 }
 
@@ -27,17 +27,18 @@ type programModular struct {
 	possibleOperators []uint
 }
 
-func initializeMemoryForModularProgram() []uint64 {
+func initializeMemoryForModularProgram(byModule uint64) []uint64 {
 	memory := make([]uint64, len(Constants))
 	memory[ONE] = 1
 	memory[THREE] = 3
+	memory[MINUS_ONE] = byModule - 1
 
 	return memory
 }
 
 func newModularProgram(byModule uint64) *programModular {
 	return &programModular{
-		memory:     initializeMemoryForModularProgram(),
+		memory:     initializeMemoryForModularProgram(byModule),
 		operations: []Operation{},
 		byModule:   byModule,
 		possibleConstants: []uint{
@@ -46,14 +47,14 @@ func newModularProgram(byModule uint64) *programModular {
 			uint(THREE),
 		},
 		possibleFunctions: []uint{
-			uint(FCT),
+			//			uint(FCT),
 			uint(INVERSE),
 		},
 		possibleOperators: []uint{
 			uint(SUM),
 			uint(MUL),
 			uint(POW),
-			uint(GCD),
+			//uint(GCD),
 		},
 	}
 }
@@ -257,7 +258,16 @@ func Internal_Sub_uint64(a uint64, b uint64, m uint64) uint64 {
 	return (m + a - b) % m
 }
 
+func Internal_Mul_uint64(a uint64, b uint64, m uint64) uint64 {
+	return (a * b) % m
+}
+
 func Internal_GCD_uint64(a uint64, b uint64) uint64 {
+
+	if a == 0 || b == 0 {
+		return a + b
+	}
+
 	for a != b {
 		if a > b {
 			a -= b
@@ -266,6 +276,14 @@ func Internal_GCD_uint64(a uint64, b uint64) uint64 {
 		}
 	}
 	return a
+}
+
+func Internal_Inverse_uint64(a uint64, m uint64) uint64 {
+	return Internal_Pow_uint64_mod(a, m-2, m)
+}
+
+func Internal_Add_uint64(a uint64, b uint64, m uint64) uint64 {
+	return (a + b) % m
 }
 
 func (program *programModular) Execute() uint64 {
@@ -278,15 +296,17 @@ func (program *programModular) Execute() uint64 {
 
 		switch operation.OperationType {
 		case SUM:
-			memory[memoryResultOffset] = (memory[operation.Operand1Offset] + memory[operation.Operand2Offset]) % program.byModule
+			memory[memoryResultOffset] = Internal_Add_uint64(memory[operation.Operand1Offset], memory[operation.Operand2Offset], program.byModule)
 		case SUB:
 			memory[memoryResultOffset] = Internal_Sub_uint64(memory[operation.Operand1Offset], memory[operation.Operand2Offset], program.byModule)
 		case MUL:
-			memory[memoryResultOffset] = (memory[operation.Operand1Offset] * memory[operation.Operand2Offset]) % program.byModule
+			memory[memoryResultOffset] = Internal_Mul_uint64(memory[operation.Operand1Offset], memory[operation.Operand2Offset], program.byModule)
 		case POW:
 			memory[memoryResultOffset] = Internal_Pow_uint64_mod(memory[operation.Operand1Offset], memory[operation.Operand2Offset], program.byModule)
 		case GCD:
 			memory[memoryResultOffset] = Internal_GCD_uint64(memory[operation.Operand1Offset], memory[operation.Operand2Offset])
+		case INVERSE:
+			memory[memoryResultOffset] = Internal_Inverse_uint64(memory[operation.Operand1Offset], program.byModule)
 
 		default:
 			panic(fmt.Sprintf("unknown operationType=%v", operation.OperationType))
@@ -300,35 +320,30 @@ func (program *programModular) Execute() uint64 {
 
 // Recombine function
 // ready(result) is the function which obtain calculation result, if this function returns
-func (program *programModular) Recombine(xValues []uint64, maxXOccurrences uint, ready func()) {
+func (program *programModular) Recombine(maxXOccurrences uint, ready func()) {
 
 	constants := program.getPointersToConstantsOffsets()
 	functions := program.getPointersToFunctionsTypes()
 	operations := program.getPointersToOperatorsTypes()
 
-	for _, x := range xValues {
-		program.SetX(x)
-
-		ready_X_Constants_Functions := func() {
-			RecombineValues(&operations, &program.possibleOperators, ready)
-		}
-
-		ready_X_Constants := func() {
-			RecombineValues(&functions, &program.possibleFunctions, ready_X_Constants_Functions)
-		}
-
-		readyX := func(remainedConstants *[]*uint) {
-			RecombineValues(remainedConstants, &program.possibleConstants, ready_X_Constants)
-		}
-
-		RecombineRequiredX(&constants, maxXOccurrences, uint(X), readyX)
+	ready_X_Constants_Functions := func() {
+		RecombineValues(&operations, &program.possibleOperators, ready)
 	}
 
+	ready_X_Constants := func() {
+		RecombineValues(&functions, &program.possibleFunctions, ready_X_Constants_Functions)
+	}
+
+	readyX := func(remainedConstants *[]*uint) {
+		RecombineValues(remainedConstants, &program.possibleConstants, ready_X_Constants)
+	}
+
+	RecombineRequiredX(&constants, maxXOccurrences, uint(X), readyX)
 }
 
 func (program *programModular) GetEstimation(maxXOccurrences uint) uint64 {
 	return Internal_GetEstimation(
-		maxXOccurrences,
+		uint(min(uint64(maxXOccurrences), uint64(len(program.getPointersToConstantsOffsets())))),
 		uint(len(program.possibleConstants)),
 		uint(len(program.possibleFunctions)),
 		uint(len(program.possibleOperators)),

@@ -50,6 +50,25 @@ func Test_RecombineRequiredX(t *testing.T) {
 	assert_int(t, 31, counter)
 }
 
+func Test_RecombineRequiredX_maxOccurrences_greater_input(t *testing.T) {
+	maxOccurrences := uint(7)
+
+	input := [3]uint{}
+	inputRefs := []*uint{&input[0], &input[1], &input[2]}
+
+	counter := 0
+
+	next := func(remaining *[]*uint) {
+		counter++
+		setLadder(remaining)
+		fmt.Printf("%2v %v\n", counter, input)
+	}
+
+	formFormula.RecombineRequiredX(&inputRefs, maxOccurrences, 0, next)
+
+	assert_int(t, 6, counter)
+}
+
 func Test_RecombineRequiredX_3of5(t *testing.T) {
 	input := [5]uint{}
 	inputRefs := []*uint{&input[0], &input[1], &input[2], &input[3], &input[4]}

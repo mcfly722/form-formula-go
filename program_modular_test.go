@@ -70,9 +70,35 @@ func Test_GCD_uint64_primes(t *testing.T) {
 	assert_uint64(t, 1, formFormula.Internal_GCD_uint64(2867395040399, 6816348081737))
 }
 
+func Test_GCD_uint64_zero_first(t *testing.T) {
+	assert_uint64(t, 6816348081737, formFormula.Internal_GCD_uint64(0, 6816348081737))
+}
+
+func Test_GCD_uint64_zero_second(t *testing.T) {
+	assert_uint64(t, 2867395040399, formFormula.Internal_GCD_uint64(2867395040399, 0))
+}
+
+func Test_GCD_uint64_zero_both(t *testing.T) {
+	assert_uint64(t, 0, formFormula.Internal_GCD_uint64(0, 0))
+}
+
 func Test_GCD_uint64(t *testing.T) {
 	prime := (uint64)(634741)
 	assert_uint64(t, prime, formFormula.Internal_GCD_uint64(prime*233837, prime*975643))
+}
+
+func Test_Mul_uint64_2(t *testing.T) {
+	a := uint64(16237)
+	b := uint64(10234)
+	m := uint64(1234)
+	assert_uint64(t, ((a%m)*(b%m))%m, formFormula.Internal_Mul_uint64(a, b, m))
+}
+
+func Test_Add_uint64(t *testing.T) {
+	a := uint64(16237)
+	b := uint64(10234)
+	m := uint64(1234)
+	assert_uint64(t, ((a%m)+(b%m))%m, formFormula.Internal_Add_uint64(a, b, m))
 }
 
 func Test_Execute(t *testing.T) {
@@ -152,9 +178,7 @@ func Test_RecombineModularProgram_ForSingleX(t *testing.T) {
 		fmt.Printf("%5v %v\n", counter, p.Disassemble())
 	}
 
-	possibleXValues := []uint64{0}
-
-	p.Recombine(possibleXValues, 3, ready)
+	p.Recombine(3, ready)
 
 	fmt.Printf("estimation: %v\n", p.GetEstimation(3))
 	assert_uint64(t, p.GetEstimation(3), counter)
@@ -184,6 +208,30 @@ func Test_ModularProgram_Sub_GCD(t *testing.T) {
 
 	assert_string(t, "((gcd(x,3))-1) mod 5", p.Disassemble())
 	assert_uint64(t, 2, p.Execute())
+}
+
+func Test_ModularProgram_Inverse(t *testing.T) {
+	a := uint64(2485191)
+	m := uint64(12373)
+	inverse := formFormula.Internal_Inverse_uint64(a, m)
+
+	fmt.Printf("inverse = %v\n", inverse)
+	assert_uint64(t, 1, formFormula.Internal_Mul_uint64(a, inverse, m))
+}
+
+func Test_ModularProgram_MinusOne(t *testing.T) {
+	p := formFormula.NewModularProgram(17)
+
+	p.NewOp(
+		formFormula.SUM,
+		uint(formFormula.X),
+		uint(formFormula.MINUS_ONE),
+	)
+
+	p.SetX(23)
+
+	assert_string(t, "(x+-1) mod 17", p.Disassemble())
+	assert_uint64(t, 5, p.Execute())
 }
 
 func Test_ModularProgram_UnknownOperationType(t *testing.T) {
