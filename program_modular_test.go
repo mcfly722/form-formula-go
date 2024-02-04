@@ -210,6 +210,21 @@ func Test_ModularProgram_Sub_GCD(t *testing.T) {
 	assert_uint64(t, 2, p.Execute())
 }
 
+func Test_ModularProgram_MinusOne(t *testing.T) {
+	p := formFormula.NewModularProgram(17)
+
+	p.NewOp(
+		formFormula.SUM,
+		uint(formFormula.X),
+		uint(formFormula.MINUS_ONE),
+	)
+
+	p.SetX(23)
+
+	assert_string(t, "(x+-1) mod 17", p.Disassemble())
+	assert_uint64(t, 5, p.Execute())
+}
+
 func Test_ModularProgram_UnknownOperationType(t *testing.T) {
 	p := formFormula.NewModularProgram(5)
 

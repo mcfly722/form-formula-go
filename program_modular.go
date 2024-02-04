@@ -27,17 +27,18 @@ type programModular struct {
 	possibleOperators []uint
 }
 
-func initializeMemoryForModularProgram() []uint64 {
+func initializeMemoryForModularProgram(byModule uint64) []uint64 {
 	memory := make([]uint64, len(Constants))
 	memory[ONE] = 1
 	memory[THREE] = 3
+	memory[MINUS_ONE] = byModule - 1
 
 	return memory
 }
 
 func newModularProgram(byModule uint64) *programModular {
 	return &programModular{
-		memory:     initializeMemoryForModularProgram(),
+		memory:     initializeMemoryForModularProgram(byModule),
 		operations: []Operation{},
 		byModule:   byModule,
 		possibleConstants: []uint{
@@ -46,7 +47,7 @@ func newModularProgram(byModule uint64) *programModular {
 			uint(THREE),
 		},
 		possibleFunctions: []uint{
-			uint(FCT),
+			//			uint(FCT),
 			uint(INVERSE),
 		},
 		possibleOperators: []uint{
