@@ -75,6 +75,20 @@ func Test_GCD_uint64(t *testing.T) {
 	assert_uint64(t, prime, formFormula.Internal_GCD_uint64(prime*233837, prime*975643))
 }
 
+func Test_Mul_uint64_2(t *testing.T) {
+	a := uint64(16237)
+	b := uint64(10234)
+	m := uint64(1234)
+	assert_uint64(t, ((a%m)*(b%m))%m, formFormula.Internal_Mul_uint64(a, b, m))
+}
+
+func Test_Add_uint64(t *testing.T) {
+	a := uint64(16237)
+	b := uint64(10234)
+	m := uint64(1234)
+	assert_uint64(t, ((a%m)+(b%m))%m, formFormula.Internal_Add_uint64(a, b, m))
+}
+
 func Test_Execute(t *testing.T) {
 
 	p := formFormula.NewModularProgram(123902934)

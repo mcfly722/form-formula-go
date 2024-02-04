@@ -257,6 +257,10 @@ func Internal_Sub_uint64(a uint64, b uint64, m uint64) uint64 {
 	return (m + a - b) % m
 }
 
+func Internal_Mul_uint64(a uint64, b uint64, m uint64) uint64 {
+	return (a * b) % m
+}
+
 func Internal_GCD_uint64(a uint64, b uint64) uint64 {
 	for a != b {
 		if a > b {
@@ -266,6 +270,10 @@ func Internal_GCD_uint64(a uint64, b uint64) uint64 {
 		}
 	}
 	return a
+}
+
+func Internal_Add_uint64(a uint64, b uint64, m uint64) uint64 {
+	return (a + b) % m
 }
 
 func (program *programModular) Execute() uint64 {
@@ -278,11 +286,11 @@ func (program *programModular) Execute() uint64 {
 
 		switch operation.OperationType {
 		case SUM:
-			memory[memoryResultOffset] = (memory[operation.Operand1Offset] + memory[operation.Operand2Offset]) % program.byModule
+			memory[memoryResultOffset] = Internal_Add_uint64(memory[operation.Operand1Offset], memory[operation.Operand2Offset], program.byModule)
 		case SUB:
 			memory[memoryResultOffset] = Internal_Sub_uint64(memory[operation.Operand1Offset], memory[operation.Operand2Offset], program.byModule)
 		case MUL:
-			memory[memoryResultOffset] = (memory[operation.Operand1Offset] * memory[operation.Operand2Offset]) % program.byModule
+			memory[memoryResultOffset] = Internal_Mul_uint64(memory[operation.Operand1Offset], memory[operation.Operand2Offset], program.byModule)
 		case POW:
 			memory[memoryResultOffset] = Internal_Pow_uint64_mod(memory[operation.Operand1Offset], memory[operation.Operand2Offset], program.byModule)
 		case GCD:
