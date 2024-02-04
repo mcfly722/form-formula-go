@@ -13,7 +13,7 @@ type ProgramIterational interface {
 	Disassemble() string
 	Dump() string
 	ExecuteWithIterations(iterations uint, x float64) float64
-	RecombineForms(maxXOccurrences uint, ready func())
+	Recombine(maxXOccurrences uint, ready func())
 	GetEstimation(maxXOccurrences uint) uint64
 }
 
@@ -280,7 +280,7 @@ func (program *programIterational) getPointersToConstantsOffsets() []*uint {
 	return result
 }
 
-func (program *programIterational) RecombineForms(maxXOccurrences uint, ready func()) {
+func (program *programIterational) Recombine(maxXOccurrences uint, ready func()) {
 	constants := program.getPointersToConstantsOffsets()
 	functions := program.getPointersToFunctionsTypes()
 	operations := program.getPointersToOperatorsTypes()

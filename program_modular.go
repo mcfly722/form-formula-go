@@ -14,7 +14,7 @@ type ProgramModular interface {
 	Disassemble() string
 	Dump() string
 	Execute() uint64
-	RecombineForms(maxXOccurrences uint, ready func())
+	Recombine(maxXOccurrences uint, ready func())
 	GetEstimation(maxXOccurrences uint) uint64
 }
 
@@ -308,7 +308,7 @@ func (program *programModular) Execute() uint64 {
 
 // Recombine function
 // ready(result) is the function which obtain calculation result, if this function returns
-func (program *programModular) RecombineForms(maxXOccurrences uint, ready func()) {
+func (program *programModular) Recombine(maxXOccurrences uint, ready func()) {
 
 	constants := program.getPointersToConstantsOffsets()
 	functions := program.getPointersToFunctionsTypes()

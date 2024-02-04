@@ -166,7 +166,7 @@ func Test_RecombineModularProgram_ForSingleX(t *testing.T) {
 		fmt.Printf("%5v %v\n", counter, p.Disassemble())
 	}
 
-	p.RecombineForms(3, ready)
+	p.Recombine(3, ready)
 
 	fmt.Printf("estimation: %v\n", p.GetEstimation(3))
 	assert_uint64(t, p.GetEstimation(3), counter)

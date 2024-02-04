@@ -193,7 +193,7 @@ func Test_RecombineIterationalProgram_ForSingleX(t *testing.T) {
 		fmt.Printf("%5v %v\n", counter, p.Disassemble())
 	}
 
-	p.RecombineForms(3, ready)
+	p.Recombine(3, ready)
 
 	assert_uint64(t, p.GetEstimation(3), counter)
 }
