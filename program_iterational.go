@@ -302,7 +302,7 @@ func (program *programIterational) Recombine(maxXOccurrences uint, ready func())
 
 func (program *programIterational) GetEstimation(maxXOccurrences uint) uint64 {
 	return Internal_GetEstimation(
-		maxXOccurrences,
+		uint(min(uint64(maxXOccurrences), uint64(len(program.getPointersToConstantsOffsets())))),
 		uint(len(program.possibleConstants)),
 		uint(len(program.possibleFunctions)),
 		uint(len(program.possibleOperators)),
