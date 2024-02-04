@@ -24,7 +24,7 @@ func RecombineRequiredX(input *[]*uint, maxOccurrences uint, setXValue uint, rea
 		ready(input)
 		return
 	}
-	for occurrences := uint(1); occurrences <= maxOccurrences; occurrences++ {
+	for occurrences := uint(1); occurrences <= maxOccurrences && int(occurrences) < len(*input); occurrences++ {
 		buffer := make([]*uint, len(*input)-int(occurrences))
 		recombineRequiredXRecursive(0, input, &buffer, 0, occurrences, setXValue, ready)
 	}
