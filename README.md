@@ -147,9 +147,9 @@ RecombineValues(input *[]*uint, possibleValues *[]uint, ready func())
 #### 4. Iterate over all possible functions (where number of child arguments = 1)
 Used the same principle as in step 3, but applied for functions.
 #### 5. Iterate over all possible operators (where number of child arguments = 2)
-Used the same principle as in step 3, but applied for functions.<br>
+Used the same principle as in step 3, but applied for operations.<br>
 #### 6. Apply formula to itself several times
-Finally, after all it included loops opens, you get some function form<br>
+Finally, after all it included loops opens, you get some function-form<br>
 F.e:<br>
 ```
 === RUN   Test_RecombineModularProgram_ForSingleX
@@ -188,6 +188,29 @@ F.e:<br>
 ```
 You can apply this function-form several times or just once, and based on this calculation estimate how close this function to your original pattern.<br>
 
+### Multithreading
+To use multithreading for search, next method could be used:
+```
+// Handler to calculate particular job
+handler := func(threadIndex uint, job formFormula.Job) bool {
+    
+    sequence := job.ToString()
+    
+    // search for this sequence
+
+    // return True  - if need to continue or
+    //        False - solution found, need to finish
+	return true 
+}
+
+// Save Config function
+configSaver := func(job formFormula.Job) {
+    // job which is a tail of a pool. This job has been finished and should be saved using this function
+}
+    
+pool := formFormula.NewWorkersPool(0, "()", 5, 4, handler, configSaver)
+pool.Start()
+```
 ### API
 Next arithmetics are supported:
 * <b>Modular</b> with uint64 type
