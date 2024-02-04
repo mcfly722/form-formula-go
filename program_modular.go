@@ -278,6 +278,10 @@ func Internal_GCD_uint64(a uint64, b uint64) uint64 {
 	return a
 }
 
+func Internal_Inverse_uint64(a uint64, m uint64) uint64 {
+	return Internal_Pow_uint64_mod(a, m-2, m)
+}
+
 func Internal_Add_uint64(a uint64, b uint64, m uint64) uint64 {
 	return (a + b) % m
 }
@@ -301,6 +305,8 @@ func (program *programModular) Execute() uint64 {
 			memory[memoryResultOffset] = Internal_Pow_uint64_mod(memory[operation.Operand1Offset], memory[operation.Operand2Offset], program.byModule)
 		case GCD:
 			memory[memoryResultOffset] = Internal_GCD_uint64(memory[operation.Operand1Offset], memory[operation.Operand2Offset])
+		case INVERSE:
+			memory[memoryResultOffset] = Internal_Inverse_uint64(memory[operation.Operand1Offset], program.byModule)
 
 		default:
 			panic(fmt.Sprintf("unknown operationType=%v", operation.OperationType))

@@ -210,6 +210,15 @@ func Test_ModularProgram_Sub_GCD(t *testing.T) {
 	assert_uint64(t, 2, p.Execute())
 }
 
+func Test_ModularProgram_Inverse(t *testing.T) {
+	a := uint64(2485191)
+	m := uint64(12373)
+	inverse := formFormula.Internal_Inverse_uint64(a, m)
+
+	fmt.Printf("inverse = %v\n", inverse)
+	assert_uint64(t, 1, formFormula.Internal_Mul_uint64(a, inverse, m))
+}
+
 func Test_ModularProgram_MinusOne(t *testing.T) {
 	p := formFormula.NewModularProgram(17)
 
