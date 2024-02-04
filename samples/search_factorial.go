@@ -31,7 +31,7 @@ type sample struct {
 }
 
 func main() {
-	maxXOccurrences := uint(2)
+	maxXOccurrences := uint(4)
 	n := uint64(31063)
 	m := uint64(96179)
 	min := min(m, n)
@@ -70,6 +70,7 @@ func main() {
 		//fmt.Printf("started #%5v: %v estimation=[%v]\n", job.GetIndex(), job.ToString(), program.GetEstimation(maxXOccurrences))
 
 		readyCombination := func() {
+			job.IncrementCycle()
 
 			for _, sample := range samples {
 
@@ -101,9 +102,9 @@ func main() {
 	}
 
 	configSaver := func(job formFormula.Job) {
-		fmt.Printf("%v\tFORM #%5v: %v\n", time.Now().Format("01-02-2006 15:04:05"), job.GetIndex(), job.ToString())
+		fmt.Printf("%v\tFORM #%5v: %v  %v\n", time.Now().Format("01-02-2006 15:04:05"), job.GetIndex(), job.ToString(), job.Stat())
 	}
 
-	pool := formFormula.NewWorkersPool(0, "()", 300, 300, handler, configSaver)
+	pool := formFormula.NewWorkersPool(0, "()", 100, 700, handler, configSaver)
 	pool.Start()
 }
