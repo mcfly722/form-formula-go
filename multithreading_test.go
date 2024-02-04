@@ -20,6 +20,6 @@ func Test_NewWorkersPool(t *testing.T) {
 		fmt.Printf("%v\n", job)
 	}
 
-	pool := formFormula.NewWorkersPool(5, 1, handler, configSaver)
+	pool := formFormula.NewWorkersPool(0, "()", 5, 4, handler, configSaver)
 	pool.Start()
 }

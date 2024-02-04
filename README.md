@@ -188,6 +188,29 @@ F.e:<br>
 ```
 You can apply this function-form several times or just once, and based on this calculation estimate how close this function to your original pattern.<br>
 
+### Multithreading
+To use multithreading for search, next method could be used:
+```
+// Handler to calculate particular job
+handler := func(threadIndex uint, job formFormula.Job) bool {
+    
+    sequence := job.ToString()
+    
+    // search for this sequence
+
+    // return True  - if need to continue or
+    //        False - solution found, need to finish
+	return true 
+}
+
+// Save Config function
+configSaver := func(job formFormula.Job) {
+    // job which is a tail of a pool. This job has been finished and should be saved using this function
+}
+    
+pool := formFormula.NewWorkersPool(0, "()", 5, 4, handler, configSaver)
+pool.Start()
+```
 ### API
 Next arithmetics are supported:
 * <b>Modular</b> with uint64 type

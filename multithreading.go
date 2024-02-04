@@ -116,7 +116,7 @@ type workersPool struct {
 	scheduler Scheduler
 }
 
-func NewWorkersPool(maxThreads uint, maxDoneJobsBuffer uint, handler func(threadIndex uint, job Job) bool, configSaver func(job Job)) WorkersPool {
+func NewWorkersPool(lastFinishedJobIndex uint64, lastFinishedJob string, maxThreads uint, maxDoneJobsBuffer uint, handler func(threadIndex uint, job Job) bool, configSaver func(job Job)) WorkersPool {
 
 	jobConstructor := func(currentSequence string) string {
 		newSequence, err := GetNextBracketsSequence(currentSequence, 2)
@@ -129,7 +129,7 @@ func NewWorkersPool(maxThreads uint, maxDoneJobsBuffer uint, handler func(thread
 	newWorkersPool := &workersPool{
 		threads:   maxThreads,
 		handler:   handler,
-		scheduler: newScheduler(0, "()", maxDoneJobsBuffer, jobConstructor, configSaver),
+		scheduler: newScheduler(lastFinishedJobIndex, lastFinishedJob, maxDoneJobsBuffer, jobConstructor, configSaver),
 	}
 
 	return newWorkersPool
