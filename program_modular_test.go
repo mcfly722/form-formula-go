@@ -70,6 +70,18 @@ func Test_GCD_uint64_primes(t *testing.T) {
 	assert_uint64(t, 1, formFormula.Internal_GCD_uint64(2867395040399, 6816348081737))
 }
 
+func Test_GCD_uint64_zero_first(t *testing.T) {
+	assert_uint64(t, 6816348081737, formFormula.Internal_GCD_uint64(0, 6816348081737))
+}
+
+func Test_GCD_uint64_zero_second(t *testing.T) {
+	assert_uint64(t, 2867395040399, formFormula.Internal_GCD_uint64(2867395040399, 0))
+}
+
+func Test_GCD_uint64_zero_both(t *testing.T) {
+	assert_uint64(t, 0, formFormula.Internal_GCD_uint64(0, 0))
+}
+
 func Test_GCD_uint64(t *testing.T) {
 	prime := (uint64)(634741)
 	assert_uint64(t, prime, formFormula.Internal_GCD_uint64(prime*233837, prime*975643))

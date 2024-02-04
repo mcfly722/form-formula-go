@@ -262,6 +262,11 @@ func Internal_Mul_uint64(a uint64, b uint64, m uint64) uint64 {
 }
 
 func Internal_GCD_uint64(a uint64, b uint64) uint64 {
+
+	if a == 0 || b == 0 {
+		return a + b
+	}
+
 	for a != b {
 		if a > b {
 			a -= b
